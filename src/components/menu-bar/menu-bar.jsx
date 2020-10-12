@@ -7,7 +7,7 @@ import bindAll from 'lodash.bindall';
 import bowser from 'bowser';
 import React from 'react';
 
-import VM from 'scratch-vm';
+import VM from 'scratch-vm/dist/web/scratch-vm';
 
 import Box from '../box/box.jsx';
 import Button from '../button/button.jsx';
@@ -37,6 +37,7 @@ import {
     getIsUpdating,
     getIsShowingProject,
     manualUpdateProject,
+    saveProjectToCodio,
     requestNewProject,
     remixProject,
     saveProjectAsCopy
@@ -193,6 +194,10 @@ class MenuBar extends React.Component {
         }
         this.props.onRequestCloseFile();
     }
+    handleClickSaveToCodio () {
+        this.props.onClickSaveToCodio();
+        this.props.onRequestCloseFile();
+    }
     handleClickRemix () {
         this.props.onClickRemix();
         this.props.onRequestCloseFile();
@@ -312,6 +317,13 @@ class MenuBar extends React.Component {
                 id="gui.menuBar.new"
             />
         );
+        const saveToCodioMessage = (
+            <FormattedMessage
+                defaultMessage="Save to Codio"
+                description="Menu bar item for saving project to Codio"
+                id="gui.menuBar.saveToCodio"
+            />
+        );
         const remixButton = (
             <Button
                 className={classNames(
@@ -386,6 +398,13 @@ class MenuBar extends React.Component {
                                             onClick={this.handleClickNew}
                                         >
                                             {newProjectMessage}
+                                        </MenuItem>
+                                    </MenuSection>
+                                    <MenuSection>
+                                        <MenuItem
+                                            onClick={this.handleClickSaveToCodio}
+                                        >
+                                            {saveToCodioMessage}
                                         </MenuItem>
                                     </MenuSection>
                                     {(this.props.canSave || this.props.canCreateCopy || this.props.canRemix) && (
@@ -751,6 +770,7 @@ MenuBar.propTypes = {
     onClickRemix: PropTypes.func,
     onClickSave: PropTypes.func,
     onClickSaveAsCopy: PropTypes.func,
+    onClickSaveToCodio: PropTypes.func,
     onLogOut: PropTypes.func,
     onOpenRegistration: PropTypes.func,
     onOpenTipLibrary: PropTypes.func,
@@ -816,6 +836,7 @@ const mapDispatchToProps = dispatch => ({
     onClickNew: needSave => dispatch(requestNewProject(needSave)),
     onClickRemix: () => dispatch(remixProject()),
     onClickSave: () => dispatch(manualUpdateProject()),
+    onClickSaveToCodio: () => dispatch(saveProjectToCodio()),
     onClickSaveAsCopy: () => dispatch(saveProjectAsCopy()),
     onSeeCommunity: () => dispatch(setPlayer(true))
 });

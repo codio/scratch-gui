@@ -2,7 +2,7 @@ import bindAll from 'lodash.bindall';
 import React from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
-import VM from 'scratch-vm';
+import VM from 'scratch-vm/dist/web/scratch-vm';
 
 import collectMetadata from '../lib/collect-metadata';
 import log from '../lib/log';
@@ -65,8 +65,20 @@ const ProjectSaverHOC = function (WrappedComponent) {
             // These functions are called with null on unmount to prevent stale references.
             this.props.onSetProjectThumbnailer(this.getProjectThumbnail);
             this.props.onSetProjectSaver(this.tryToAutoSave);
+
+            window.codio.loaded()
+                .then(() => {
+
+                })
+                .fail(msg => {
+                    const err = `codio loaded - error: ${msg}`;
+                    /* eslint-disable no-console */
+                    console.log(err);
+                });
         }
         componentDidUpdate (prevProps) {
+            /* eslint-disable no-console */
+            console.log('project saver componentDidUpdate prevProps', prevProps, 'this.props', this.props);
             if (!this.props.isAnyCreatingNewState && prevProps.isAnyCreatingNewState) {
                 this.reportTelemetryEvent('projectWasCreated');
             }
@@ -139,6 +151,8 @@ const ProjectSaverHOC = function (WrappedComponent) {
         }
         scheduleAutoSave () {
             if (this.props.isShowingSaveable && this.props.autoSaveTimeoutId === null) {
+                /* eslint-disable no-console */
+                console.log('scheduleAutoSave');
                 const timeoutId = setTimeout(this.tryToAutoSave,
                     this.props.autoSaveIntervalSecs * 1000);
                 this.props.setAutoSaveTimeoutId(timeoutId);
@@ -146,6 +160,8 @@ const ProjectSaverHOC = function (WrappedComponent) {
         }
         tryToAutoSave () {
             if (this.props.projectChanged && this.props.isShowingSaveable) {
+                /* eslint-disable no-console */
+                console.log('tryToAutoSave');
                 this.props.onAutoUpdateProject();
             }
         }
@@ -210,6 +226,33 @@ const ProjectSaverHOC = function (WrappedComponent) {
                     this.props.onProjectError(err);
                 });
         }
+        saveCodioFile (data) {
+            return new Promise((resolve, reject) => {
+                const {codio} = window;
+                if (codio) {
+                    codio.loaded()
+                        .then(() => {
+                            const saveFile = codio.getFileName();
+                            window.codio.saveFile(saveFile, data)
+                                .then(() => {
+                                    resolve();
+                                })
+                                .fail(msg => {
+                                    const err = `saveCodioFile - error saving scratch file: ${msg}`;
+                                    /* eslint-disable no-console */
+                                    console.log(err);
+                                    reject(new Error(err));
+                                });
+                        })
+                        .fail(msg => {
+                            const err = `codio loaded - error: ${msg}`;
+                            /* eslint-disable no-console */
+                            console.log(err);
+                            reject(new Error(err));
+                        });
+                }
+            });
+        }
         /**
          * storeProject:
          * @param  {number|string|undefined} projectId - defined value will PUT/update; undefined/null will POST/create
@@ -228,6 +271,10 @@ const ProjectSaverHOC = function (WrappedComponent) {
             const savedVMState = this.props.vm.toJSON();
             return Promise.all(this.props.vm.assets
                 .filter(asset => !asset.clean)
+                .map(asset => {
+                    console.log('asset is ', asset);
+                    return asset;
+                })
                 .map(
                     asset => storage.store(
                         asset.assetType,

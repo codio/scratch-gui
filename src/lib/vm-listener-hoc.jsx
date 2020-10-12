@@ -1,7 +1,7 @@
 import bindAll from 'lodash.bindall';
 import PropTypes from 'prop-types';
 import React from 'react';
-import VM from 'scratch-vm';
+import VM from 'scratch-vm/dist/web/scratch-vm';
 
 import {connect} from 'react-redux';
 
@@ -74,7 +74,14 @@ const vmListenerHOC = function (WrappedComponent) {
             }
         }
         handleProjectChanged () {
+            /* eslint-disable no-console */
+            console.log('handleProjectChanged');
             if (this.props.shouldUpdateProjectChanged && !this.props.projectChanged) {
+                /* eslint-disable no-console */
+                console.log('handleProjectChanged',
+                    'this.props.shouldUpdateProjectChanged', this.props.shouldUpdateProjectChanged,
+                    '!this.props.projectChanged', !this.props.projectChanged
+                );
                 this.props.onProjectChanged();
             }
         }

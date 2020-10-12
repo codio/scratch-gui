@@ -1,4 +1,5 @@
 const defaultsDeep = require('lodash.defaultsdeep');
+var fs = require('fs');
 var path = require('path');
 var webpack = require('webpack');
 
@@ -19,8 +20,12 @@ const base = {
     devtool: 'cheap-module-source-map',
     devServer: {
         contentBase: path.resolve(__dirname, 'build'),
-        host: '0.0.0.0',
-        port: process.env.PORT || 8601
+        host: 'scratch.codio.test',
+        port: process.env.PORT || 8601,
+        https: {
+            key: fs.readFileSync('../new-generation/certs/codio.test.key'),
+            cert: fs.readFileSync('../new-generation/certs/codio.test.crt')
+        }
     },
     output: {
         library: 'GUI',
@@ -182,7 +187,7 @@ module.exports = [
             }]),
             new CopyWebpackPlugin([{
                 from: 'extension-worker.{js,js.map}',
-                context: 'node_modules/scratch-vm/dist/web'
+                context: '../scratch-vm/dist/web'
             }])
         ])
     })
@@ -222,7 +227,7 @@ module.exports = [
                 }]),
                 new CopyWebpackPlugin([{
                     from: 'extension-worker.{js,js.map}',
-                    context: 'node_modules/scratch-vm/dist/web'
+                    context: '../scratch-vm/dist/web'
                 }]),
                 // Include library JSON files for scratch-desktop to use for downloading
                 new CopyWebpackPlugin([{
