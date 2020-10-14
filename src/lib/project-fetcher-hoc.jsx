@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import {intlShape, injectIntl} from 'react-intl';
 import bindAll from 'lodash.bindall';
 import {connect} from 'react-redux';
-import VM from 'scratch-vm/dist/web/scratch-vm';
+import VM from 'scratch-vm';
 
 
 import {setProjectUnchanged} from '../reducers/project-changed';

@@ -187,7 +187,7 @@ module.exports = [
             }]),
             new CopyWebpackPlugin([{
                 from: 'extension-worker.{js,js.map}',
-                context: '../scratch-vm/dist/web'
+                context: 'node_modules/scratch-vm/dist/web'
             }])
         ])
     })
