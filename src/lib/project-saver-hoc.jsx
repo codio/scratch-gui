@@ -66,6 +66,7 @@ const ProjectSaverHOC = function (WrappedComponent) {
             this.props.onSetProjectThumbnailer(this.getProjectThumbnail);
             this.props.onSetProjectSaver(this.tryToAutoSave);
 
+            // jquery deferred
             window.codio.loaded()
                 .then(() => {
 
@@ -77,8 +78,6 @@ const ProjectSaverHOC = function (WrappedComponent) {
                 });
         }
         componentDidUpdate (prevProps) {
-            /* eslint-disable no-console */
-            console.log('project saver componentDidUpdate prevProps', prevProps, 'this.props', this.props);
             if (!this.props.isAnyCreatingNewState && prevProps.isAnyCreatingNewState) {
                 this.reportTelemetryEvent('projectWasCreated');
             }
@@ -151,8 +150,6 @@ const ProjectSaverHOC = function (WrappedComponent) {
         }
         scheduleAutoSave () {
             if (this.props.isShowingSaveable && this.props.autoSaveTimeoutId === null) {
-                /* eslint-disable no-console */
-                console.log('scheduleAutoSave');
                 const timeoutId = setTimeout(this.tryToAutoSave,
                     this.props.autoSaveIntervalSecs * 1000);
                 this.props.setAutoSaveTimeoutId(timeoutId);
@@ -160,8 +157,6 @@ const ProjectSaverHOC = function (WrappedComponent) {
         }
         tryToAutoSave () {
             if (this.props.projectChanged && this.props.isShowingSaveable) {
-                /* eslint-disable no-console */
-                console.log('tryToAutoSave');
                 this.props.onAutoUpdateProject();
             }
         }
@@ -271,10 +266,6 @@ const ProjectSaverHOC = function (WrappedComponent) {
             const savedVMState = this.props.vm.toJSON();
             return Promise.all(this.props.vm.assets
                 .filter(asset => !asset.clean)
-                .map(asset => {
-                    console.log('asset is ', asset);
-                    return asset;
-                })
                 .map(
                     asset => storage.store(
                         asset.assetType,

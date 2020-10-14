@@ -74,14 +74,7 @@ const vmListenerHOC = function (WrappedComponent) {
             }
         }
         handleProjectChanged () {
-            /* eslint-disable no-console */
-            console.log('handleProjectChanged');
             if (this.props.shouldUpdateProjectChanged && !this.props.projectChanged) {
-                /* eslint-disable no-console */
-                console.log('handleProjectChanged',
-                    'this.props.shouldUpdateProjectChanged', this.props.shouldUpdateProjectChanged,
-                    '!this.props.projectChanged', !this.props.projectChanged
-                );
                 this.props.onProjectChanged();
             }
         }

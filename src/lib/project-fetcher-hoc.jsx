@@ -4,7 +4,6 @@ import {intlShape, injectIntl} from 'react-intl';
 import bindAll from 'lodash.bindall';
 import {connect} from 'react-redux';
 import VM from 'scratch-vm/dist/web/scratch-vm';
-import {decode64buffer} from './tools';
 
 
 import {setProjectUnchanged} from '../reducers/project-changed';
@@ -53,8 +52,6 @@ const ProjectFetcherHOC = function (WrappedComponent) {
             ) {
                 this.props.setProjectId(props.projectId.toString());
             }
-            /* eslint-disable no-console */
-            console.log('ProjectFetcherComponent props', props);
         }
         componentDidUpdate (prevProps) {
             if (prevProps.projectHost !== this.props.projectHost) {
@@ -79,18 +76,12 @@ const ProjectFetcherHOC = function (WrappedComponent) {
             }
         }
         loadCodioFile (loadingState) {
-            /* eslint-disable no-console */
-            console.log('start loadCodioFile loadingState:', loadingState);
             return new Promise((resolve, reject) => {
                 const {codio} = window;
                 if (codio) {
-                    /* eslint-disable no-console */
-                    console.log('codio.loaded', codio.loaded);
                     codio.loaded()
                         .then(() => {
                             const fileName = codio.getFileName();
-                            /* eslint-disable no-console */
-                            console.log('loadCodioFile fileName', fileName);
                             if (typeof fileName !== 'string') {
                                 const err = `loadCodioFile - non string codio file name "${fileName}"`
                                 /* eslint-disable no-console */
@@ -98,40 +89,15 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                                 reject(new Error(err));
                                 return;
                             }
-                            window.codio.getBinaryFile(fileName)
-                                .then(res => {
-                                    /* eslint-disable no-console */
-                                    console.log('loadCodioFile - got file', res);
-                                    const uint8array = decode64buffer(res.content);
-                                    const view = uint8array.buffer;
-                                    /* eslint-disable no-console */
-                                    console.log('loadCodioFile - content view', view);
-                                    this.props.vm.loadProject(view)
-                                        .then(data => {
-                                            /* eslint-disable no-console */
-                                            console.log('load project finished', data);
-                                            this.props.onLoadingFinished(loadingState, true);
-                                            resolve();
-                                        })
-                                        .catch(err => {
-                                            /* eslint-disable no-console */
-                                            console.log('load project error', err);
-                                            this.props.onLoadingFinished(loadingState, false);
-                                            reject(new Error(err));
-                                        });
-                                    // if (parsedData.targets) {
-                                    //     resolve({data: res});
-                                    // } else {
-                                    //     storage
-                                    //         .load(storage.AssetType.Project, 0, storage.DataFormat.JSON)
-                                    //         .then(resolve);
-                                    // }
-                                    // resolve({data: res});
+                            this.props.vm.loadCodioProject()
+                                .then(data => {
+                                    this.props.onLoadingFinished(loadingState, true);
+                                    resolve();
                                 })
-                                .fail(msg => {
-                                    const err = `loadCodioFile - error loading scratch file: ${msg}`;
+                                .catch(err => {
                                     /* eslint-disable no-console */
-                                    console.log(err, msg);
+                                    console.log('load project error', err);
+                                    this.props.onLoadingFinished(loadingState, false);
                                     reject(new Error(err));
                                 });
                         })
@@ -151,8 +117,6 @@ const ProjectFetcherHOC = function (WrappedComponent) {
 
         }
         fetchCodioProject (projectId, loadingState) {
-            /* eslint-disable no-console */
-            console.log('fetchCodioProject', projectId, loadingState);
             return this.loadCodioFile(loadingState)
                 .catch(err => {
                     this.props.onError(err);
