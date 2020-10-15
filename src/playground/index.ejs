@@ -5,16 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="google" value="notranslate">
     <link rel="shortcut icon" href="static/favicon.ico">
-    <script src="https://codio.test/ext/iframe/base/static/codio-client.js"></script>
+    <script src="https://codio.com/ext/iframe/base/static/codio-client.js"></script>
     <title><%= htmlWebpackPlugin.options.title %></title>
-    <% if (htmlWebpackPlugin.options.sentryConfig) { %>
-        <!-- Sentry error logging to help with finding bugs -->
-        <script src="https://cdn.ravenjs.com/3.22.1/raven.min.js" crossorigin="anonymous"></script>
-        <script>
-            Raven.config(<%= htmlWebpackPlugin.options.sentryConfig %>).install();
-        </script>
-        <!-- /Sentry -->
-    <% } %>
   </head>
   <body>
   </body>
