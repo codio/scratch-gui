@@ -92,13 +92,6 @@ async function upload (s3path, buildDir, files, key, secret) {
     const [s3path, buildDir, key, secret] = process.argv.slice(2);
 
     const excluded = [
-        path.join(buildDir, 'index.html'),
-        path.join(buildDir, 'rev-manifest-fonts.json'),
-        path.join(buildDir, 'rev-manifest-less.json'),
-        path.join(buildDir, 'rev-manifest-images.json'),
-        path.join(buildDir, 'codio-client.js'),
-        path.join(buildDir, 'connectivity'),
-        path.join(buildDir, 'ext', 'iframe')
     ];
 
     const files = await walk(path.join('.', buildDir));
@@ -109,6 +102,7 @@ async function upload (s3path, buildDir, files, key, secret) {
             return 'excluded';
         } else if (path.extname(file) === '.map') {
             return 'sourcemap';
+        /* eslint-disable no-else-return */
         } else {
             return 'source';
         }
