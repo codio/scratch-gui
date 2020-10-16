@@ -97,7 +97,6 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                                 .catch(err => {
                                     /* eslint-disable no-console */
                                     console.log('load project error', err);
-                                    this.props.onLoadingFinished(loadingState, false);
                                     reject(new Error(err));
                                 });
                         })
@@ -119,8 +118,9 @@ const ProjectFetcherHOC = function (WrappedComponent) {
         fetchCodioProject (projectId, loadingState) {
             return this.loadCodioFile(loadingState)
                 .catch(err => {
-                    this.props.onError(err);
-                    log.error(err);
+                    /* eslint-disable no-console */
+                    console.log('fetch codio project error', err);
+                    return this.fetchProject(0, loadingState);
                 });
         }
         fetchProject (projectId, loadingState) {
