@@ -10,4 +10,4 @@ upload() {
 }
 
 upload
-echo git_hash
+echo ${git_hash}
