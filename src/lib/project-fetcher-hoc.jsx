@@ -83,33 +83,25 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                         .then(() => {
                             const fileName = codio.getFileName();
                             if (typeof fileName !== 'string') {
-                                const err = `loadCodioFile - non string codio file name "${fileName}"`
-                                /* eslint-disable no-console */
-                                console.log(err);
+                                const err = `loadCodioFile - non string codio file name "${fileName}"`;
                                 reject(new Error(err));
                                 return;
                             }
                             this.props.vm.loadCodioProject()
-                                .then(data => {
+                                .then(() => {
                                     this.props.onLoadingFinished(loadingState, true);
                                     resolve();
                                 })
                                 .catch(err => {
-                                    /* eslint-disable no-console */
-                                    console.log('load project error', err);
                                     reject(new Error(err));
                                 });
                         })
                         .fail(msg => {
                             const err = `codio loaded - error: ${msg}`;
-                            /* eslint-disable no-console */
-                            console.log(err);
                             reject(new Error(err));
                         });
                 } else {
-                    const err = 'no codio defined on window';
-                    /* eslint-disable no-console */
-                    console.log(err);
+                    const err = 'window.codio is undefined';
                     reject(new Error(err));
                 }
             });
@@ -117,11 +109,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
         }
         fetchCodioProject (projectId, loadingState) {
             return this.loadCodioFile(loadingState)
-                .catch(err => {
-                    /* eslint-disable no-console */
-                    console.log('fetch codio project error', err);
-                    return this.fetchProject(0, loadingState);
-                });
+                .catch(() => this.fetchProject(0, loadingState));
         }
         fetchProject (projectId, loadingState) {
             return storage
