@@ -92,9 +92,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                                     this.props.onLoadingFinished(loadingState, true);
                                     resolve();
                                 })
-                                .catch(err => {
-                                    reject(new Error(err));
-                                });
+                                .catch(reject);
                         })
                         .fail(msg => {
                             const err = `codio loaded - error: ${msg}`;

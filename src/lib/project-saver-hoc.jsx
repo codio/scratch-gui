@@ -68,9 +68,6 @@ const ProjectSaverHOC = function (WrappedComponent) {
 
             // jquery deferred
             window.codio.loaded()
-                .then(() => {
-
-                })
                 .fail(msg => {
                     const err = `codio loaded - error: ${msg}`;
                     /* eslint-disable no-console */
@@ -229,9 +226,7 @@ const ProjectSaverHOC = function (WrappedComponent) {
                         .then(() => {
                             const saveFile = codio.getFileName();
                             window.codio.saveFile(saveFile, data)
-                                .then(() => {
-                                    resolve();
-                                })
+                                .then(resolve)
                                 .fail(msg => {
                                     const err = `saveCodioFile - error saving scratch file: ${msg}`;
                                     /* eslint-disable no-console */

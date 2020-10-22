@@ -308,9 +308,7 @@ const reducer = function (state, action) {
         return state;
     case START_CODIO_SAVING:
         if (state.loadingState === LoadingState.SHOWING_WITH_ID) {
-            return Object.assign({}, state, {
-                loadingState: LoadingState.CODIO_SAVING
-            });
+            return {...state, loadingState: LoadingState.CODIO_SAVING};
         }
         return state;
     case START_REMIXING:
