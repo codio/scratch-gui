@@ -8,7 +8,7 @@ import HashParserHOC from '../lib/hash-parser-hoc.jsx';
 import log from '../lib/log.js';
 
 const onClickLogo = () => {
-    window.open('https://scratch.mit.edu', '_blank');
+    // do nothing
 };
 
 const handleTelemetryModalCancel = () => {
