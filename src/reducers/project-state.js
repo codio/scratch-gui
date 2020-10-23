@@ -19,6 +19,7 @@ const START_ERROR = 'scratch-gui/project-state/START_ERROR';
 const START_FETCHING_NEW = 'scratch-gui/project-state/START_FETCHING_NEW';
 const START_LOADING_VM_FILE_UPLOAD = 'scratch-gui/project-state/START_LOADING_VM_FILE_UPLOAD';
 const START_MANUAL_UPDATING = 'scratch-gui/project-state/START_MANUAL_UPDATING';
+const START_CODIO_SAVING = 'scratch-gui/project-state/START_CODIO_SAVING';
 const START_REMIXING = 'scratch-gui/project-state/START_REMIXING';
 const START_UPDATING_BEFORE_CREATING_COPY = 'scratch-gui/project-state/START_UPDATING_BEFORE_CREATING_COPY';
 const START_UPDATING_BEFORE_CREATING_NEW = 'scratch-gui/project-state/START_UPDATING_BEFORE_CREATING_NEW';
@@ -37,6 +38,7 @@ const LoadingState = keyMirror({
     LOADING_VM_NEW_DEFAULT: null,
     LOADING_VM_WITH_ID: null,
     MANUAL_UPDATING: null,
+    CODIO_SAVING: null,
     REMIXING: null,
     SHOWING_WITH_ID: null,
     SHOWING_WITHOUT_ID: null,
@@ -87,6 +89,7 @@ const getIsRemixing = loadingState => (
 const getIsUpdating = loadingState => (
     loadingState === LoadingState.AUTO_UPDATING ||
     loadingState === LoadingState.MANUAL_UPDATING ||
+    loadingState === LoadingState.CODIO_SAVING ||
     loadingState === LoadingState.UPDATING_BEFORE_COPY ||
     loadingState === LoadingState.UPDATING_BEFORE_NEW
 );
@@ -143,7 +146,8 @@ const reducer = function (state, action) {
         return state;
     case DONE_LOADING_VM_WITHOUT_ID:
         if (state.loadingState === LoadingState.LOADING_VM_FILE_UPLOAD ||
-            state.loadingState === LoadingState.LOADING_VM_NEW_DEFAULT) {
+            state.loadingState === LoadingState.LOADING_VM_NEW_DEFAULT ||
+            state.loadingState === LoadingState.FETCHING_WITH_ID) {
             return Object.assign({}, state, {
                 loadingState: LoadingState.SHOWING_WITHOUT_ID,
                 projectId: defaultProjectId
@@ -186,7 +190,8 @@ const reducer = function (state, action) {
         return state;
     case DONE_UPDATING:
         if (state.loadingState === LoadingState.AUTO_UPDATING ||
-            state.loadingState === LoadingState.MANUAL_UPDATING) {
+            state.loadingState === LoadingState.MANUAL_UPDATING ||
+            state.loadingState === LoadingState.CODIO_SAVING) {
             return Object.assign({}, state, {
                 loadingState: LoadingState.SHOWING_WITH_ID
             });
@@ -299,6 +304,11 @@ const reducer = function (state, action) {
             return Object.assign({}, state, {
                 loadingState: LoadingState.MANUAL_UPDATING
             });
+        }
+        return state;
+    case START_CODIO_SAVING:
+        if (state.loadingState === LoadingState.SHOWING_WITH_ID) {
+            return {...state, loadingState: LoadingState.CODIO_SAVING};
         }
         return state;
     case START_REMIXING:
@@ -435,6 +445,15 @@ const onLoadedProject = (loadingState, canSave, success) => {
         }
         // failed to load default project; show error
         return {type: START_ERROR};
+    // codio loads project
+    case LoadingState.FETCHING_WITH_ID:
+        if (success) {
+            if (canSave) {
+                return {type: DONE_LOADING_VM_TO_SAVE};
+            }
+            return {type: DONE_LOADING_VM_WITHOUT_ID};
+        }
+        return {type: START_ERROR};
     default:
         return;
     }
@@ -444,6 +463,7 @@ const doneUpdatingProject = loadingState => {
     switch (loadingState) {
     case LoadingState.AUTO_UPDATING:
     case LoadingState.MANUAL_UPDATING:
+    case LoadingState.CODIO_SAVING:
         return {
             type: DONE_UPDATING
         };
@@ -496,6 +516,10 @@ const manualUpdateProject = () => ({
     type: START_MANUAL_UPDATING
 });
 
+const saveProjectToCodio = () => ({
+    type: START_CODIO_SAVING
+});
+
 const saveProjectAsCopy = () => ({
     type: START_UPDATING_BEFORE_CREATING_COPY
 });
@@ -530,6 +554,7 @@ export {
     getIsShowingWithoutId,
     getIsUpdating,
     manualUpdateProject,
+    saveProjectToCodio,
     onFetchedProjectData,
     onLoadedProject,
     projectError,

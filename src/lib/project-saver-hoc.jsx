@@ -65,6 +65,14 @@ const ProjectSaverHOC = function (WrappedComponent) {
             // These functions are called with null on unmount to prevent stale references.
             this.props.onSetProjectThumbnailer(this.getProjectThumbnail);
             this.props.onSetProjectSaver(this.tryToAutoSave);
+
+            // jquery deferred
+            window.codio.loaded()
+                .fail(msg => {
+                    const err = `codio loaded - error: ${msg}`;
+                    /* eslint-disable no-console */
+                    console.log(err);
+                });
         }
         componentDidUpdate (prevProps) {
             if (!this.props.isAnyCreatingNewState && prevProps.isAnyCreatingNewState) {
@@ -209,6 +217,31 @@ const ProjectSaverHOC = function (WrappedComponent) {
                     this.props.onShowAlert('creatingError');
                     this.props.onProjectError(err);
                 });
+        }
+        saveCodioFile (data) {
+            return new Promise((resolve, reject) => {
+                const {codio} = window;
+                if (codio) {
+                    codio.loaded()
+                        .then(() => {
+                            const saveFile = codio.getFileName();
+                            window.codio.saveFile(saveFile, data)
+                                .then(resolve)
+                                .fail(msg => {
+                                    const err = `saveCodioFile - error saving scratch file: ${msg}`;
+                                    /* eslint-disable no-console */
+                                    console.log(err);
+                                    reject(new Error(err));
+                                });
+                        })
+                        .fail(msg => {
+                            const err = `codio loaded - error: ${msg}`;
+                            /* eslint-disable no-console */
+                            console.log(err);
+                            reject(new Error(err));
+                        });
+                }
+            });
         }
         /**
          * storeProject:
