@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import {intlShape, injectIntl} from 'react-intl';
 import bindAll from 'lodash.bindall';
 import {connect} from 'react-redux';
+import VM from 'scratch-vm';
+
 
 import {setProjectUnchanged} from '../reducers/project-changed';
 import {
@@ -13,7 +15,8 @@ import {
     getIsShowingProject,
     onFetchedProjectData,
     projectError,
-    setProjectId
+    setProjectId,
+    onLoadedProject
 } from '../reducers/project-state';
 import {
     activateTab,
@@ -57,8 +60,13 @@ const ProjectFetcherHOC = function (WrappedComponent) {
             if (prevProps.assetHost !== this.props.assetHost) {
                 storage.setAssetHost(this.props.assetHost);
             }
+
             if (this.props.isFetchingWithId && !prevProps.isFetchingWithId) {
-                this.fetchProject(this.props.reduxProjectId, this.props.loadingState);
+                if (this.props.reduxProjectId === 'codio') {
+                    this.fetchCodioProject(this.props.reduxProjectId, this.props.loadingState);
+                } else {
+                    this.fetchProject(this.props.reduxProjectId, this.props.loadingState);
+                }
             }
             if (this.props.isShowingProject && !prevProps.isShowingProject) {
                 this.props.onProjectUnchanged();
@@ -66,6 +74,40 @@ const ProjectFetcherHOC = function (WrappedComponent) {
             if (this.props.isShowingProject && (prevProps.isLoadingProject || prevProps.isCreatingNew)) {
                 this.props.onActivateTab(BLOCKS_TAB_INDEX);
             }
+        }
+        loadCodioFile (loadingState) {
+            return new Promise((resolve, reject) => {
+                const {codio} = window;
+                if (codio) {
+                    codio.loaded()
+                        .then(() => {
+                            const fileName = codio.getFileName();
+                            if (typeof fileName !== 'string') {
+                                const err = `loadCodioFile - non string codio file name "${fileName}"`;
+                                reject(new Error(err));
+                                return;
+                            }
+                            this.props.vm.loadCodioProject()
+                                .then(() => {
+                                    this.props.onLoadingFinished(loadingState, true);
+                                    resolve();
+                                })
+                                .catch(reject);
+                        })
+                        .fail(msg => {
+                            const err = `codio loaded - error: ${msg}`;
+                            reject(new Error(err));
+                        });
+                } else {
+                    const err = 'window.codio is undefined';
+                    reject(new Error(err));
+                }
+            });
+
+        }
+        fetchCodioProject (projectId, loadingState) {
+            return this.loadCodioFile(loadingState)
+                .catch(() => this.fetchProject(0, loadingState));
         }
         fetchProject (projectId, loadingState) {
             return storage
@@ -94,6 +136,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                 onActivateTab,
                 onError: onErrorProp,
                 onFetchedProjectData: onFetchedProjectDataProp,
+                onLoadingFinished: onLoadingFinishedProp,
                 onProjectUnchanged,
                 projectHost,
                 projectId,
@@ -120,6 +163,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
         isLoadingProject: PropTypes.bool,
         isShowingProject: PropTypes.bool,
         loadingState: PropTypes.oneOf(LoadingStates),
+        onLoadingFinished: PropTypes.func,
         onActivateTab: PropTypes.func,
         onError: PropTypes.func,
         onFetchedProjectData: PropTypes.func,
@@ -127,7 +171,8 @@ const ProjectFetcherHOC = function (WrappedComponent) {
         projectHost: PropTypes.string,
         projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
         reduxProjectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-        setProjectId: PropTypes.func
+        setProjectId: PropTypes.func,
+        vm: PropTypes.instanceOf(VM).isRequired
     };
     ProjectFetcherComponent.defaultProps = {
         assetHost: 'https://assets.scratch.mit.edu',
@@ -140,13 +185,16 @@ const ProjectFetcherHOC = function (WrappedComponent) {
         isLoadingProject: getIsLoading(state.scratchGui.projectState.loadingState),
         isShowingProject: getIsShowingProject(state.scratchGui.projectState.loadingState),
         loadingState: state.scratchGui.projectState.loadingState,
-        reduxProjectId: state.scratchGui.projectState.projectId
+        reduxProjectId: state.scratchGui.projectState.projectId,
+        vm: state.scratchGui.vm
     });
-    const mapDispatchToProps = dispatch => ({
+    const mapDispatchToProps = (dispatch, ownProps) => ({
         onActivateTab: tab => dispatch(activateTab(tab)),
         onError: error => dispatch(projectError(error)),
         onFetchedProjectData: (projectData, loadingState) =>
             dispatch(onFetchedProjectData(projectData, loadingState)),
+        onLoadingFinished: (loadingState, success) =>
+            dispatch(onLoadedProject(loadingState, ownProps.canSave, success)),
         setProjectId: projectId => dispatch(setProjectId(projectId)),
         onProjectUnchanged: () => dispatch(setProjectUnchanged())
     });
