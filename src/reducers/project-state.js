@@ -226,7 +226,8 @@ const reducer = function (state, action) {
         return state;
     case DONE_UPDATING:
         if (state.loadingState === LoadingState.AUTO_UPDATING ||
-            state.loadingState === LoadingState.MANUAL_UPDATING) {
+            state.loadingState === LoadingState.MANUAL_UPDATING ||
+            state.loadingState === LoadingState.CODIO_SAVING) {
             return Object.assign({}, state, {
                 loadingState: LoadingState.SHOWING_WITH_ID
             });
@@ -526,6 +527,7 @@ const onLoadedProject = (loadingState, canSave, success) => {
             }
             return {type: DONE_LOADING_VM_CODIO};
         }
+        return {type: START_ERROR};
         return {type: START_ERROR};
     default:
         return;

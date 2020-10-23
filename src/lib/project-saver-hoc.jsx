@@ -242,6 +242,31 @@ const ProjectSaverHOC = function (WrappedComponent) {
                     this.props.onProjectError(err);
                 });
         }
+        saveCodioFile (data) {
+            return new Promise((resolve, reject) => {
+                const {codio} = window;
+                if (codio) {
+                    codio.loaded()
+                        .then(() => {
+                            const saveFile = codio.getFileName();
+                            window.codio.saveFile(saveFile, data)
+                                .then(resolve)
+                                .fail(msg => {
+                                    const err = `saveCodioFile - error saving scratch file: ${msg}`;
+                                    /* eslint-disable no-console */
+                                    console.log(err);
+                                    reject(new Error(err));
+                                });
+                        })
+                        .fail(msg => {
+                            const err = `codio loaded - error: ${msg}`;
+                            /* eslint-disable no-console */
+                            console.log(err);
+                            reject(new Error(err));
+                        });
+                }
+            });
+        }
         storeProjectToCodio () {
             return this.props.vm.saveProjectSb3ToCodio(this.props.vm)
                 .then(() => {

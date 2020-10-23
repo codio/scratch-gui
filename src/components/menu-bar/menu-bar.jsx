@@ -351,7 +351,6 @@ class MenuBar extends React.Component {
                 id="gui.menuBar.saveNow"
             />
         );
-
         return (
             <Box
                 className={classNames(
@@ -476,7 +475,6 @@ class MenuBar extends React.Component {
                         />
                         <FormattedMessage {...ariaMessages.tutorials} />
                     </div>
-                </div>
             </Box>
         );
     }
