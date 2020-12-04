@@ -4,9 +4,11 @@ const DONE_CREATING_COPY = 'scratch-gui/project-state/DONE_CREATING_COPY';
 const DONE_CREATING_NEW = 'scratch-gui/project-state/DONE_CREATING_NEW';
 const DONE_FETCHING_DEFAULT = 'scratch-gui/project-state/DONE_FETCHING_DEFAULT';
 const DONE_FETCHING_WITH_ID = 'scratch-gui/project-state/DONE_FETCHING_WITH_ID';
+const DONE_FETCHING_CODIO = 'scratch-gui/project-state/DONE_FETCHING_CODIO';
 const DONE_LOADING_VM_TO_SAVE = 'scratch-gui/project-state/DONE_LOADING_VM_TO_SAVE';
 const DONE_LOADING_VM_WITH_ID = 'scratch-gui/project-state/DONE_LOADING_VM_WITH_ID';
 const DONE_LOADING_VM_WITHOUT_ID = 'scratch-gui/project-state/DONE_LOADING_VM_WITHOUT_ID';
+const DONE_LOADING_VM_CODIO = 'scratch-gui/project-state/DONE_LOADING_VM_CODIO';
 const DONE_REMIXING = 'scratch-gui/project-state/DONE_REMIXING';
 const DONE_UPDATING = 'scratch-gui/project-state/DONE_UPDATING';
 const DONE_UPDATING_BEFORE_COPY = 'scratch-gui/project-state/DONE_UPDATING_BEFORE_COPY';
@@ -30,18 +32,22 @@ const LoadingState = keyMirror({
     NOT_LOADED: null,
     ERROR: null,
     AUTO_UPDATING: null,
+    AUTO_UPDATING_CODIO: null,
     CREATING_COPY: null,
     CREATING_NEW: null,
     FETCHING_NEW_DEFAULT: null,
     FETCHING_WITH_ID: null,
+    FETCHING_CODIO: null,
     LOADING_VM_FILE_UPLOAD: null,
     LOADING_VM_NEW_DEFAULT: null,
     LOADING_VM_WITH_ID: null,
+    LOADING_VM_CODIO: null,
     MANUAL_UPDATING: null,
     CODIO_SAVING: null,
     REMIXING: null,
     SHOWING_WITH_ID: null,
     SHOWING_WITHOUT_ID: null,
+    SHOWING_CODIO: null,
     UPDATING_BEFORE_COPY: null,
     UPDATING_BEFORE_NEW: null
 });
@@ -55,16 +61,19 @@ const getIsFetchingWithoutId = loadingState => (
 );
 const getIsFetchingWithId = loadingState => (
     loadingState === LoadingState.FETCHING_WITH_ID ||
-    loadingState === LoadingState.FETCHING_NEW_DEFAULT
+    loadingState === LoadingState.FETCHING_NEW_DEFAULT ||
+    loadingState === LoadingState.FETCHING_CODIO
 );
 const getIsLoadingWithId = loadingState => (
     loadingState === LoadingState.LOADING_VM_WITH_ID ||
-    loadingState === LoadingState.LOADING_VM_NEW_DEFAULT
+    loadingState === LoadingState.LOADING_VM_NEW_DEFAULT ||
+    loadingState === LoadingState.LOADING_VM_CODIO
 );
 const getIsLoading = loadingState => (
     loadingState === LoadingState.LOADING_VM_FILE_UPLOAD ||
     loadingState === LoadingState.LOADING_VM_WITH_ID ||
-    loadingState === LoadingState.LOADING_VM_NEW_DEFAULT
+    loadingState === LoadingState.LOADING_VM_NEW_DEFAULT ||
+    loadingState === LoadingState.LOADING_VM_CODIO
 );
 const getIsLoadingUpload = loadingState => (
     loadingState === LoadingState.LOADING_VM_FILE_UPLOAD
@@ -88,17 +97,23 @@ const getIsRemixing = loadingState => (
 );
 const getIsUpdating = loadingState => (
     loadingState === LoadingState.AUTO_UPDATING ||
+    loadingState === LoadingState.AUTO_UPDATING_CODIO ||
     loadingState === LoadingState.MANUAL_UPDATING ||
     loadingState === LoadingState.CODIO_SAVING ||
     loadingState === LoadingState.UPDATING_BEFORE_COPY ||
     loadingState === LoadingState.UPDATING_BEFORE_NEW
 );
+const getIsUpdatingCodio = loadingState => (
+    loadingState === LoadingState.AUTO_UPDATING_CODIO
+);
 const getIsShowingProject = loadingState => (
     loadingState === LoadingState.SHOWING_WITH_ID ||
-    loadingState === LoadingState.SHOWING_WITHOUT_ID
+    loadingState === LoadingState.SHOWING_WITHOUT_ID ||
+    loadingState === LoadingState.SHOWING_CODIO
 );
 const getIsShowingWithId = loadingState => (
-    loadingState === LoadingState.SHOWING_WITH_ID
+    loadingState === LoadingState.SHOWING_WITH_ID ||
+    loadingState === LoadingState.SHOWING_CODIO
 );
 const getIsShowingWithoutId = loadingState => (
     loadingState === LoadingState.SHOWING_WITHOUT_ID
@@ -144,6 +159,14 @@ const reducer = function (state, action) {
             });
         }
         return state;
+    case DONE_FETCHING_CODIO:
+        if (state.loadingState === LoadingState.FETCHING_CODIO) {
+            return Object.assign({}, state, {
+                loadingState: LoadingState.LOADING_VM_CODIO,
+                projectData: action.projectData
+            });
+        }
+        return state;
     case DONE_LOADING_VM_WITHOUT_ID:
         if (state.loadingState === LoadingState.LOADING_VM_FILE_UPLOAD ||
             state.loadingState === LoadingState.LOADING_VM_NEW_DEFAULT ||
@@ -161,10 +184,22 @@ const reducer = function (state, action) {
             });
         }
         return state;
+    case DONE_LOADING_VM_CODIO:
+        if (state.loadingState === LoadingState.LOADING_VM_CODIO) {
+            return Object.assign({}, state, {
+                loadingState: LoadingState.SHOWING_CODIO
+            });
+        }
+        return state;
     case DONE_LOADING_VM_TO_SAVE:
         if (state.loadingState === LoadingState.LOADING_VM_FILE_UPLOAD) {
             return Object.assign({}, state, {
                 loadingState: LoadingState.AUTO_UPDATING
+            });
+        }
+        if (state.loadingState === LoadingState.LOADING_VM_CODIO) {
+            return Object.assign({}, state, {
+                loadingState: LoadingState.AUTO_UPDATING_CODIO
             });
         }
         return state;
@@ -190,10 +225,15 @@ const reducer = function (state, action) {
         return state;
     case DONE_UPDATING:
         if (state.loadingState === LoadingState.AUTO_UPDATING ||
-            state.loadingState === LoadingState.MANUAL_UPDATING ||
-            state.loadingState === LoadingState.CODIO_SAVING) {
+            state.loadingState === LoadingState.MANUAL_UPDATING) {
             return Object.assign({}, state, {
                 loadingState: LoadingState.SHOWING_WITH_ID
+            });
+        }
+        if (state.loadingState === LoadingState.CODIO_SAVING ||
+            state.loadingState === LoadingState.AUTO_UPDATING_CODIO) {
+            return Object.assign({}, state, {
+                loadingState: LoadingState.SHOWING_CODIO
             });
         }
         return state;
@@ -217,6 +257,11 @@ const reducer = function (state, action) {
             return Object.assign({}, state, {
                 loadingState: LoadingState.SHOWING_WITHOUT_ID,
                 projectId: defaultProjectId
+            });
+        }
+        if (state.projectId === 'codio') {
+            return Object.assign({}, state, {
+                loadingState: LoadingState.SHOWING_CODIO
             });
         }
         return Object.assign({}, state, {
@@ -257,6 +302,12 @@ const reducer = function (state, action) {
                     projectId: defaultProjectId
                 });
             }
+            if (action.projectId === 'codio') {
+                return Object.assign({}, state, {
+                    loadingState: LoadingState.FETCHING_CODIO,
+                    projectId: action.projectId
+                });
+            }
             return Object.assign({}, state, {
                 loadingState: LoadingState.FETCHING_WITH_ID,
                 projectId: action.projectId
@@ -267,6 +318,11 @@ const reducer = function (state, action) {
         if (state.loadingState === LoadingState.SHOWING_WITH_ID) {
             return Object.assign({}, state, {
                 loadingState: LoadingState.AUTO_UPDATING
+            });
+        }
+        if (state.loadingState === LoadingState.SHOWING_CODIO) {
+            return Object.assign({}, state, {
+                loadingState: LoadingState.AUTO_UPDATING_CODIO
             });
         }
         return state;
@@ -307,8 +363,10 @@ const reducer = function (state, action) {
         }
         return state;
     case START_CODIO_SAVING:
-        if (state.loadingState === LoadingState.SHOWING_WITH_ID) {
-            return {...state, loadingState: LoadingState.CODIO_SAVING};
+        if (state.loadingState === LoadingState.SHOWING_CODIO) {
+            return Object.assign({}, state, {
+                loadingState: LoadingState.CODIO_SAVING
+            });
         }
         return state;
     case START_REMIXING:
@@ -337,8 +395,10 @@ const reducer = function (state, action) {
         if ([
             LoadingState.FETCHING_NEW_DEFAULT,
             LoadingState.FETCHING_WITH_ID,
+            LoadingState.FETCHING_CODIO,
             LoadingState.LOADING_VM_NEW_DEFAULT,
-            LoadingState.LOADING_VM_WITH_ID
+            LoadingState.LOADING_VM_WITH_ID,
+            LoadingState.LOADING_VM_CODIO
         ].includes(state.loadingState)) {
             return Object.assign({}, state, {
                 loadingState: LoadingState.ERROR,
@@ -356,6 +416,14 @@ const reducer = function (state, action) {
         ].includes(state.loadingState)) {
             return Object.assign({}, state, {
                 loadingState: LoadingState.SHOWING_WITH_ID,
+                error: action.error
+            });
+        }
+        if ([
+            LoadingState.AUTO_UPDATING_CODIO
+        ].includes(state.loadingState)) {
+            return Object.assign({}, state, {
+                loadingState: LoadingState.SHOWING_CODIO,
                 error: action.error
             });
         }
@@ -417,6 +485,11 @@ const onFetchedProjectData = (projectData, loadingState) => {
             type: DONE_FETCHING_DEFAULT,
             projectData: projectData
         };
+    case LoadingState.FETCHING_CODIO:
+        return {
+            type: DONE_FETCHING_CODIO,
+            projectData: projectData
+        };
     default:
         break;
     }
@@ -445,13 +518,12 @@ const onLoadedProject = (loadingState, canSave, success) => {
         }
         // failed to load default project; show error
         return {type: START_ERROR};
-    // codio loads project
-    case LoadingState.FETCHING_WITH_ID:
+    case LoadingState.LOADING_VM_CODIO:
         if (success) {
             if (canSave) {
                 return {type: DONE_LOADING_VM_TO_SAVE};
             }
-            return {type: DONE_LOADING_VM_WITHOUT_ID};
+            return {type: DONE_LOADING_VM_CODIO};
         }
         return {type: START_ERROR};
     default:
@@ -462,6 +534,7 @@ const onLoadedProject = (loadingState, canSave, success) => {
 const doneUpdatingProject = loadingState => {
     switch (loadingState) {
     case LoadingState.AUTO_UPDATING:
+    case LoadingState.AUTO_UPDATING_CODIO:
     case LoadingState.MANUAL_UPDATING:
     case LoadingState.CODIO_SAVING:
         return {
@@ -500,6 +573,7 @@ const requestProjectUpload = loadingState => {
     case LoadingState.NOT_LOADED:
     case LoadingState.SHOWING_WITH_ID:
     case LoadingState.SHOWING_WITHOUT_ID:
+    case LoadingState.SHOWING_CODIO:
         return {
             type: START_LOADING_VM_FILE_UPLOAD
         };
@@ -553,6 +627,7 @@ export {
     getIsShowingWithId,
     getIsShowingWithoutId,
     getIsUpdating,
+    getIsUpdatingCodio,
     manualUpdateProject,
     saveProjectToCodio,
     onFetchedProjectData,

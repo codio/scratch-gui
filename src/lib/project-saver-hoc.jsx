@@ -31,6 +31,7 @@ import {
     getIsShowingWithId,
     getIsShowingWithoutId,
     getIsUpdating,
+    getIsUpdatingCodio,
     projectError
 } from '../reducers/project-state';
 
@@ -86,7 +87,11 @@ const ProjectSaverHOC = function (WrappedComponent) {
                 this.scheduleAutoSave();
             }
             if (this.props.isUpdating && !prevProps.isUpdating) {
-                this.updateProjectToStorage();
+                if (this.props.isUpdatingCodio) {
+                    this.updateProjectToCodio();
+                } else {
+                    this.updateProjectToStorage();
+                }
             }
             if (this.props.isCreatingNew && !prevProps.isCreatingNew) {
                 this.createNewProjectToStorage();
@@ -160,6 +165,22 @@ const ProjectSaverHOC = function (WrappedComponent) {
         isShowingCreatable (props) {
             return props.canCreateNew && props.isShowingWithoutId;
         }
+        updateProjectToCodio () {
+            this.props.onShowSavingAlert();
+            return this.storeProjectToCodio()
+                .then(() => {
+                    // there's an http response object available here, but we don't need to examine
+                    // it, because there are no values contained in it that we care about
+                    this.props.onUpdatedProject(this.props.loadingState);
+                    this.props.onShowSaveSuccessAlert();
+                })
+                .catch(err => {
+                    // Always show the savingError alert because it gives the
+                    // user the chance to download or retry the save manually.
+                    this.props.onShowAlert('savingError');
+                    this.props.onProjectError(err);
+                });
+        }
         updateProjectToStorage () {
             this.props.onShowSavingAlert();
             return this.storeProject(this.props.reduxProjectId)
@@ -218,6 +239,12 @@ const ProjectSaverHOC = function (WrappedComponent) {
                     this.props.onProjectError(err);
                 });
         }
+        storeProjectToCodio () {
+            return this.props.vm.saveProjectSb3ToCodio(this.props.vm)
+                .then(() => {
+                    this.props.onSetProjectUnchanged();
+                });
+        }
         saveCodioFile (data) {
             return new Promise((resolve, reject) => {
                 const {codio} = window;
@@ -229,14 +256,14 @@ const ProjectSaverHOC = function (WrappedComponent) {
                                 .then(resolve)
                                 .fail(msg => {
                                     const err = `saveCodioFile - error saving scratch file: ${msg}`;
-                                    /* eslint-disable no-console */
+                                    /* eslint-disable-next-line no-console */
                                     console.log(err);
                                     reject(new Error(err));
                                 });
                         })
                         .fail(msg => {
                             const err = `codio loaded - error: ${msg}`;
-                            /* eslint-disable no-console */
+                            /* eslint-disable-next-line no-console */
                             console.log(err);
                             reject(new Error(err));
                         });
@@ -353,6 +380,7 @@ const ProjectSaverHOC = function (WrappedComponent) {
                 isShowingWithId,
                 isShowingWithoutId,
                 isUpdating,
+                isUpdatingCodio,
                 loadingState,
                 onAutoUpdateProject,
                 onCreatedProject,
@@ -403,6 +431,7 @@ const ProjectSaverHOC = function (WrappedComponent) {
         isShowingWithId: PropTypes.bool,
         isShowingWithoutId: PropTypes.bool,
         isUpdating: PropTypes.bool,
+        isUpdatingCodio: PropTypes.bool,
         loadingState: PropTypes.oneOf(LoadingStates),
         locale: PropTypes.string.isRequired,
         onAutoUpdateProject: PropTypes.func,
@@ -451,6 +480,7 @@ const ProjectSaverHOC = function (WrappedComponent) {
             isShowingWithId: isShowingWithId,
             isShowingWithoutId: getIsShowingWithoutId(loadingState),
             isUpdating: getIsUpdating(loadingState),
+            isUpdatingCodio: getIsUpdatingCodio(loadingState),
             isManualUpdating: getIsManualUpdating(loadingState),
             loadingState: loadingState,
             locale: state.locales.locale,

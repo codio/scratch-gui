@@ -17,6 +17,7 @@ import LanguageSelector from '../../containers/language-selector.jsx';
 import MenuBarMenu from './menu-bar-menu.jsx';
 import {MenuItem, MenuSection} from '../menu/menu.jsx';
 import SB3Downloader from '../../containers/sb3-downloader.jsx';
+import SB3CodioDownloader from '../../containers/sb3-codio-downloader.jsx';
 import DeletionRestorer from '../../containers/deletion-restorer.jsx';
 import TurboMode from '../../containers/turbo-mode.jsx';
 import MenuBarHOC from '../../containers/menu-bar-hoc.jsx';
@@ -232,6 +233,16 @@ class MenuBar extends React.Component {
             event.preventDefault();
         }
     }
+    getSaveToCodioHandler (downloadProjectCallback) {
+        return () => {
+            this.props.onRequestCloseFile();
+            downloadProjectCallback();
+            if (this.props.onProjectTelemetryEvent) {
+                const metadata = collectMetadata(this.props.vm, this.props.projectTitle, this.props.locale);
+                this.props.onProjectTelemetryEvent('projectDidSave', metadata);
+            }
+        };
+    }
     getSaveToComputerHandler (downloadProjectCallback) {
         return () => {
             this.props.onRequestCloseFile();
@@ -331,10 +342,10 @@ class MenuBar extends React.Component {
                                     onRequestClose={this.props.onRequestCloseFile}
                                 >
                                     <MenuSection>
-                                        <SB3Downloader>{(className, downloadProjectCallback) => (
+                                        <SB3CodioDownloader>{(className, downloadProjectCallback) => (
                                             <MenuItem
                                                 className={className}
-                                                onClick={this.getSaveToComputerHandler(downloadProjectCallback)}
+                                                onClick={this.getSaveToCodioHandler(downloadProjectCallback)}
                                             >
                                                 <FormattedMessage
                                                     defaultMessage="Save to Codio"
@@ -342,7 +353,7 @@ class MenuBar extends React.Component {
                                                     id="gui.menuBar.saveNow"
                                                 />
                                             </MenuItem>
-                                        )}</SB3Downloader>
+                                        )}</SB3CodioDownloader>
                                     </MenuSection>
                                 </MenuBarMenu>
                             </div>

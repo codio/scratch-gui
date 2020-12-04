@@ -78,8 +78,9 @@ export default appTarget => {
                 backpackVisible
                 showComingSoon
                 backpackHost={backpackHost}
-                canSave={false}
+                canSave
                 onClickLogo={onClickLogo}
+                autoSaveIntervalSecs={60}
             />,
         appTarget);
 };
