@@ -67,12 +67,13 @@ const ProjectSaverHOC = function (WrappedComponent) {
             this.props.onSetProjectThumbnailer(this.getProjectThumbnail);
             this.props.onSetProjectSaver(this.tryToAutoSave);
 
-            // jquery deferred
             window.codio.loaded()
+                .then(() => {
+                    window.codio.subscribe('callSave', () => this.storeProjectToCodio());
+                })
                 .fail(msg => {
-                    const err = `codio loaded - error: ${msg}`;
-                    /* eslint-disable no-console */
-                    console.log(err);
+                    /* eslint-disable-next-line no-console */
+                    console.log(`codio loaded - error: ${msg}`);
                 });
         }
         componentDidUpdate (prevProps) {
