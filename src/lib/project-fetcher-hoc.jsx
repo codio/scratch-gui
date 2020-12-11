@@ -92,9 +92,13 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                             }
                             window.codio.getBinaryFile(fileName)
                                 .then(res => {
-                                    const uint8array = Base64Util.base64ToUint8Array(res.content);
-                                    const view = uint8array.buffer;
-                                    resolve(view);
+                                    if (res && res.content.length === 0) {
+                                        reject(new Error('empty file'));
+                                    } else {
+                                        const uint8array = Base64Util.base64ToUint8Array(res.content);
+                                        const view = uint8array.buffer;
+                                        resolve(view);
+                                    }
                                 })
                                 .fail(msg => {
                                     const err = `vm loadCodioFile - error loading scratch file: ${msg}`;
