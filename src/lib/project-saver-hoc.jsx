@@ -170,8 +170,6 @@ const ProjectSaverHOC = function (WrappedComponent) {
             this.props.onShowSavingAlert();
             return this.storeProjectToCodio()
                 .then(() => {
-                    // there's an http response object available here, but we don't need to examine
-                    // it, because there are no values contained in it that we care about
                     this.props.onUpdatedProject(this.props.loadingState);
                     this.props.onShowSaveSuccessAlert();
                 })

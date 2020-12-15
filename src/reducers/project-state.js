@@ -104,7 +104,8 @@ const getIsUpdating = loadingState => (
     loadingState === LoadingState.UPDATING_BEFORE_NEW
 );
 const getIsUpdatingCodio = loadingState => (
-    loadingState === LoadingState.AUTO_UPDATING_CODIO
+    loadingState === LoadingState.AUTO_UPDATING_CODIO ||
+    loadingState === LoadingState.CODIO_SAVING
 );
 const getIsShowingProject = loadingState => (
     loadingState === LoadingState.SHOWING_WITH_ID ||
