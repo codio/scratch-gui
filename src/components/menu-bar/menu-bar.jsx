@@ -16,7 +16,6 @@ import Divider from '../divider/divider.jsx';
 import LanguageSelector from '../../containers/language-selector.jsx';
 import MenuBarMenu from './menu-bar-menu.jsx';
 import {MenuItem, MenuSection} from '../menu/menu.jsx';
-import SB3Downloader from '../../containers/sb3-downloader.jsx';
 import DeletionRestorer from '../../containers/deletion-restorer.jsx';
 import TurboMode from '../../containers/turbo-mode.jsx';
 import MenuBarHOC from '../../containers/menu-bar-hoc.jsx';
@@ -152,12 +151,14 @@ class MenuBar extends React.Component {
             'handleClickRemix',
             'handleClickSave',
             'handleClickSaveAsCopy',
+            'handleClickSaveToCodio',
             'handleClickSeeCommunity',
             'handleClickShare',
             'handleKeyPress',
             'handleLanguageMouseUp',
             'handleRestoreOption',
             'getSaveToComputerHandler',
+            'getSaveToCodioHandler',
             'restoreOptionMessage'
         ]);
     }
@@ -227,10 +228,20 @@ class MenuBar extends React.Component {
     }
     handleKeyPress (event) {
         const modifier = bowser.mac ? event.metaKey : event.ctrlKey;
-        if (modifier && event.key === 's') {
-            this.props.onClickSave();
+        if (modifier && (event.key === 's' || event.keyCode === 83)) {
+            this.props.onClickSaveToCodio();
             event.preventDefault();
         }
+    }
+    getSaveToCodioHandler (saveProjectToCodioCallback) {
+        return () => {
+            this.props.onRequestCloseFile();
+            saveProjectToCodioCallback();
+            if (this.props.onProjectTelemetryEvent) {
+                const metadata = collectMetadata(this.props.vm, this.props.projectTitle, this.props.locale);
+                this.props.onProjectTelemetryEvent('projectDidSave', metadata);
+            }
+        };
     }
     getSaveToComputerHandler (downloadProjectCallback) {
         return () => {
@@ -277,6 +288,14 @@ class MenuBar extends React.Component {
         }
     }
     render () {
+        const saveNowMessage = (
+            <FormattedMessage
+                defaultMessage="Save to Codio"
+                description="Menu bar item for saving to Codio"
+                id="gui.menuBar.saveNow"
+            />
+        );
+
         return (
             <Box
                 className={classNames(
@@ -331,18 +350,11 @@ class MenuBar extends React.Component {
                                     onRequestClose={this.props.onRequestCloseFile}
                                 >
                                     <MenuSection>
-                                        <SB3Downloader>{(className, downloadProjectCallback) => (
-                                            <MenuItem
-                                                className={className}
-                                                onClick={this.getSaveToComputerHandler(downloadProjectCallback)}
-                                            >
-                                                <FormattedMessage
-                                                    defaultMessage="Save to Codio"
-                                                    description="Menu bar item for save to Codio"
-                                                    id="gui.menuBar.saveNow"
-                                                />
+                                        {this.props.canSave && (
+                                            <MenuItem onClick={this.handleClickSaveToCodio}>
+                                                {saveNowMessage}
                                             </MenuItem>
-                                        )}</SB3Downloader>
+                                        )}
                                     </MenuSection>
                                 </MenuBarMenu>
                             </div>
