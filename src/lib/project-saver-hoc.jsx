@@ -242,6 +242,12 @@ const ProjectSaverHOC = function (WrappedComponent) {
                     this.props.onProjectError(err);
                 });
         }
+        storeProjectToCodio () {
+            return this.props.vm.saveProjectSb3ToCodio(this.props.vm)
+                .then(() => {
+                    this.props.onSetProjectUnchanged();
+                });
+        }
         saveCodioFile (data) {
             return new Promise((resolve, reject) => {
                 const {codio} = window;
@@ -253,14 +259,14 @@ const ProjectSaverHOC = function (WrappedComponent) {
                                 .then(resolve)
                                 .fail(msg => {
                                     const err = `saveCodioFile - error saving scratch file: ${msg}`;
-                                    /* eslint-disable no-console */
+                                    /* eslint-disable-next-line no-console */
                                     console.log(err);
                                     reject(new Error(err));
                                 });
                         })
                         .fail(msg => {
                             const err = `codio loaded - error: ${msg}`;
-                            /* eslint-disable no-console */
+                            /* eslint-disable-next-line no-console */
                             console.log(err);
                             reject(new Error(err));
                         });

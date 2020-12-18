@@ -226,8 +226,7 @@ const reducer = function (state, action) {
         return state;
     case DONE_UPDATING:
         if (state.loadingState === LoadingState.AUTO_UPDATING ||
-            state.loadingState === LoadingState.MANUAL_UPDATING ||
-            state.loadingState === LoadingState.CODIO_SAVING) {
+            state.loadingState === LoadingState.MANUAL_UPDATING) {
             return Object.assign({}, state, {
                 loadingState: LoadingState.SHOWING_WITH_ID
             });

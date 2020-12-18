@@ -351,6 +351,7 @@ class MenuBar extends React.Component {
                 id="gui.menuBar.saveNow"
             />
         );
+
         return (
             <Box
                 className={classNames(
