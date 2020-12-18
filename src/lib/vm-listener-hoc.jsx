@@ -53,6 +53,7 @@ const vmListenerHOC = function (WrappedComponent) {
                 document.addEventListener('keydown', this.handleKeyDown);
                 document.addEventListener('keyup', this.handleKeyUp);
             }
+            this.subscribeCodioChanges();
             this.props.vm.postIOData('userData', {username: this.props.username});
         }
         componentDidUpdate (prevProps) {
@@ -72,6 +73,19 @@ const vmListenerHOC = function (WrappedComponent) {
                 document.removeEventListener('keydown', this.handleKeyDown);
                 document.removeEventListener('keyup', this.handleKeyUp);
             }
+        }
+        subscribeCodioChanges () {
+            window.codio.loaded()
+                .then(() => {
+                    const fileName = window.codio.getFileName();
+                    if (typeof fileName !== 'string') {
+                        const err = `vm loadCodioFile - non string codio file name "${fileName}"`;
+                        /* eslint-disable-next-line no-console */
+                        console.log(err);
+                        return;
+                    }
+                    window.codio.subscribe('hasChanges', () => this.props.projectChanged);
+                });
         }
         handleProjectChanged () {
             if (this.props.shouldUpdateProjectChanged && !this.props.projectChanged) {

@@ -4,10 +4,11 @@ import {intlShape, injectIntl} from 'react-intl';
 import bindAll from 'lodash.bindall';
 import {connect} from 'react-redux';
 import VM from 'scratch-vm';
-
+import Base64Util from './util/base64-util';
 
 import {setProjectUnchanged} from '../reducers/project-changed';
 import {
+    defaultProjectId,
     LoadingStates,
     getIsCreatingNew,
     getIsFetchingWithId,
@@ -75,7 +76,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                 this.props.onActivateTab(BLOCKS_TAB_INDEX);
             }
         }
-        loadCodioFile (loadingState) {
+        loadCodioProject () {
             return new Promise((resolve, reject) => {
                 const {codio} = window;
                 if (codio) {
@@ -83,31 +84,55 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                         .then(() => {
                             const fileName = codio.getFileName();
                             if (typeof fileName !== 'string') {
-                                const err = `loadCodioFile - non string codio file name "${fileName}"`;
+                                const err = `vm loadCodioFile - non string codio file name "${fileName}"`
+                                /* eslint-disable-next-line no-console */
+                                console.log(err);
                                 reject(new Error(err));
                                 return;
                             }
-                            this.props.vm.loadCodioProject()
-                                .then(() => {
-                                    this.props.onLoadingFinished(loadingState, true);
-                                    resolve();
+                            window.codio.getBinaryFile(fileName)
+                                .then(res => {
+                                    if (res && res.content.length === 0) {
+                                        reject(new Error('empty file'));
+                                    } else {
+                                        const uint8array = Base64Util.base64ToUint8Array(res.content);
+                                        const view = uint8array.buffer;
+                                        resolve(view);
+                                    }
                                 })
-                                .catch(reject);
+                                .fail(msg => {
+                                    const err = `vm loadCodioFile - error loading scratch file: ${msg}`;
+                                    /* eslint-disable-next-line no-console */
+                                    console.log(err, msg);
+                                    reject(new Error(err));
+                                });
                         })
                         .fail(msg => {
-                            const err = `codio loaded - error: ${msg}`;
+                            const err = `vm codio loaded - error: ${msg}`;
+                            /* eslint-disable-next-line no-console */
+                            console.log(err);
                             reject(new Error(err));
                         });
                 } else {
-                    const err = 'window.codio is undefined';
+                    const err = 'vm no codio defined on window';
+                    /* eslint-disable-next-line no-console */
+                    console.log(err);
                     reject(new Error(err));
                 }
             });
-
         }
         fetchCodioProject (projectId, loadingState) {
-            return this.loadCodioFile(loadingState)
-                .catch(() => this.fetchProject(0, loadingState));
+            return this.loadCodioProject(loadingState)
+                .then(projectAsset => {
+                    if (projectAsset) {
+                        this.props.onFetchedProjectData(projectAsset, loadingState);
+                    } else {
+                        // Treat failure to load as an error
+                        // Throw to be caught by catch later on
+                        throw new Error('Could not find project');
+                    }
+                })
+                .catch(() => this.fetchProject(defaultProjectId, loadingState));
         }
         fetchProject (projectId, loadingState) {
             return storage
