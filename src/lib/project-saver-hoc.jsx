@@ -152,14 +152,16 @@ const ProjectSaverHOC = function (WrappedComponent) {
             }
         }
         scheduleAutoSave () {
-            if (this.props.isShowingSaveable && this.props.autoSaveTimeoutId === null) {
+            if (!this.props.readOnly &&
+                this.props.isShowingSaveable && this.props.autoSaveTimeoutId === null) {
                 const timeoutId = setTimeout(this.tryToAutoSave,
                     this.props.autoSaveIntervalSecs * 1000);
                 this.props.setAutoSaveTimeoutId(timeoutId);
             }
         }
         tryToAutoSave () {
-            if (this.props.projectChanged && this.props.isShowingSaveable) {
+            if (!this.props.readOnly &&
+                this.props.projectChanged && this.props.isShowingSaveable) {
                 this.props.onAutoUpdateProject();
             }
         }
@@ -453,6 +455,7 @@ const ProjectSaverHOC = function (WrappedComponent) {
         onUpdateProjectThumbnail: PropTypes.func,
         onUpdatedProject: PropTypes.func,
         projectChanged: PropTypes.bool,
+        readOnly: PropTypes.bool,
         reduxProjectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
         reduxProjectTitle: PropTypes.string,
         setAutoSaveTimeoutId: PropTypes.func.isRequired,
@@ -484,6 +487,7 @@ const ProjectSaverHOC = function (WrappedComponent) {
             loadingState: loadingState,
             locale: state.locales.locale,
             projectChanged: state.scratchGui.projectChanged,
+            readOnly: state.scratchGui.readOnly,
             reduxProjectId: state.scratchGui.projectState.projectId,
             reduxProjectTitle: state.scratchGui.projectTitle,
             vm: state.scratchGui.vm
