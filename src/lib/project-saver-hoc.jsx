@@ -121,7 +121,7 @@ const ProjectSaverHOC = function (WrappedComponent) {
             // don't try to save immediately after trying to save
             if (prevProps.isUpdating) return;
             // if we're newly able to save this project, save it!
-            const becameAbleToSave = this.props.canSave && !prevProps.canSave;
+            const becameAbleToSave = !this.props.readOnly && this.props.canSave && !prevProps.canSave;
             const becameShared = this.props.isShared && !prevProps.isShared;
             if (this.props.isShowingSaveable && (becameAbleToSave || becameShared)) {
                 this.props.onAutoUpdateProject();
@@ -178,7 +178,7 @@ const ProjectSaverHOC = function (WrappedComponent) {
                 .catch(err => {
                     // Always show the savingError alert because it gives the
                     // user the chance to download or retry the save manually.
-                    this.props.onShowAlert('savingError');
+                    this.props.onShowAlert('savingCodioError');
                     this.props.onProjectError(err);
                 });
         }

@@ -1,4 +1,4 @@
-const SET_READ_ONLY = 'READ_ONLY';
+const SET_READ_ONLY = 'scratch-gui/read-only/READ_ONLY';
 
 const initialState = false;
 
