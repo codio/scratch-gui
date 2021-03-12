@@ -55,6 +55,21 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                 this.props.setProjectId(props.projectId.toString());
             }
         }
+        componentWillMount () {
+            const {codio} = window
+            if (codio) {
+                codio.loaded()
+                    .then(() => {
+                        codio.subscribeProjectUpdate(options =>
+                            this.props.onProjectReadOnly(options.readOnly)
+                        );
+                    })
+                    .fail(msg => {
+                        /* eslint-disable-next-line no-console */
+                        console.log(`codio loaded - error: ${msg}`);
+                    });
+            }
+        }
         componentDidUpdate (prevProps) {
             if (prevProps.projectHost !== this.props.projectHost) {
                 storage.setProjectHost(this.props.projectHost);

@@ -66,15 +66,17 @@ const ProjectSaverHOC = function (WrappedComponent) {
             // These functions are called with null on unmount to prevent stale references.
             this.props.onSetProjectThumbnailer(this.getProjectThumbnail);
             this.props.onSetProjectSaver(this.tryToAutoSave);
-
-            window.codio.loaded()
-                .then(() => {
-                    window.codio.subscribe('callSave', () => this.storeProjectToCodio());
-                })
-                .fail(msg => {
-                    /* eslint-disable-next-line no-console */
-                    console.log(`codio loaded - error: ${msg}`);
-                });
+            const {codio} = window
+            if (codio) {
+                codio.loaded()
+                    .then(() => {
+                        codio.subscribe('callSave', () => this.storeProjectToCodio());
+                    })
+                    .fail(msg => {
+                        /* eslint-disable-next-line no-console */
+                        console.log(`codio loaded - error: ${msg}`);
+                    });
+            }
         }
         componentDidUpdate (prevProps) {
             if (!this.props.isAnyCreatingNewState && prevProps.isAnyCreatingNewState) {
