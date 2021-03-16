@@ -66,15 +66,17 @@ const ProjectSaverHOC = function (WrappedComponent) {
             // These functions are called with null on unmount to prevent stale references.
             this.props.onSetProjectThumbnailer(this.getProjectThumbnail);
             this.props.onSetProjectSaver(this.tryToAutoSave);
-
-            window.codio.loaded()
-                .then(() => {
-                    window.codio.subscribe('callSave', () => this.storeProjectToCodio());
-                })
-                .fail(msg => {
-                    /* eslint-disable-next-line no-console */
-                    console.log(`codio loaded - error: ${msg}`);
-                });
+            const {codio} = window
+            if (codio) {
+                codio.loaded()
+                    .then(() => {
+                        codio.subscribe('callSave', () => this.storeProjectToCodio());
+                    })
+                    .fail(msg => {
+                        /* eslint-disable-next-line no-console */
+                        console.log(`codio loaded - error: ${msg}`);
+                    });
+            }
         }
         componentDidUpdate (prevProps) {
             if (!this.props.isAnyCreatingNewState && prevProps.isAnyCreatingNewState) {
@@ -121,7 +123,7 @@ const ProjectSaverHOC = function (WrappedComponent) {
             // don't try to save immediately after trying to save
             if (prevProps.isUpdating) return;
             // if we're newly able to save this project, save it!
-            const becameAbleToSave = this.props.canSave && !prevProps.canSave;
+            const becameAbleToSave = !this.props.readOnly && this.props.canSave && !prevProps.canSave;
             const becameShared = this.props.isShared && !prevProps.isShared;
             if (this.props.isShowingSaveable && (becameAbleToSave || becameShared)) {
                 this.props.onAutoUpdateProject();
@@ -152,14 +154,16 @@ const ProjectSaverHOC = function (WrappedComponent) {
             }
         }
         scheduleAutoSave () {
-            if (this.props.isShowingSaveable && this.props.autoSaveTimeoutId === null) {
+            if (!this.props.readOnly &&
+                this.props.isShowingSaveable && this.props.autoSaveTimeoutId === null) {
                 const timeoutId = setTimeout(this.tryToAutoSave,
                     this.props.autoSaveIntervalSecs * 1000);
                 this.props.setAutoSaveTimeoutId(timeoutId);
             }
         }
         tryToAutoSave () {
-            if (this.props.projectChanged && this.props.isShowingSaveable) {
+            if (!this.props.readOnly &&
+                this.props.projectChanged && this.props.isShowingSaveable) {
                 this.props.onAutoUpdateProject();
             }
         }
@@ -176,7 +180,7 @@ const ProjectSaverHOC = function (WrappedComponent) {
                 .catch(err => {
                     // Always show the savingError alert because it gives the
                     // user the chance to download or retry the save manually.
-                    this.props.onShowAlert('savingError');
+                    this.props.onShowAlert('savingCodioError');
                     this.props.onProjectError(err);
                 });
         }
@@ -453,6 +457,7 @@ const ProjectSaverHOC = function (WrappedComponent) {
         onUpdateProjectThumbnail: PropTypes.func,
         onUpdatedProject: PropTypes.func,
         projectChanged: PropTypes.bool,
+        readOnly: PropTypes.bool,
         reduxProjectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
         reduxProjectTitle: PropTypes.string,
         setAutoSaveTimeoutId: PropTypes.func.isRequired,
@@ -484,6 +489,7 @@ const ProjectSaverHOC = function (WrappedComponent) {
             loadingState: loadingState,
             locale: state.locales.locale,
             projectChanged: state.scratchGui.projectChanged,
+            readOnly: state.scratchGui.readOnly,
             reduxProjectId: state.scratchGui.projectState.projectId,
             reduxProjectTitle: state.scratchGui.projectTitle,
             vm: state.scratchGui.vm

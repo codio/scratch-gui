@@ -229,6 +229,9 @@ class MenuBar extends React.Component {
     handleKeyPress (event) {
         const modifier = bowser.mac ? event.metaKey : event.ctrlKey;
         if (modifier && (event.key === 's' || event.keyCode === 83)) {
+            if (this.props.readOnly) {
+                return;
+            }
             this.props.onClickSaveToCodio();
             event.preventDefault();
         }
@@ -331,7 +334,7 @@ class MenuBar extends React.Component {
                             </div>
                             <LanguageSelector label={this.props.intl.formatMessage(ariaMessages.language)} />
                         </div>)}
-                        {(this.props.canManageFiles) && (
+                        {(this.props.canManageFiles && !this.props.readOnly) && (
                             <div
                                 className={classNames(styles.menuBarItem, styles.hoverable, {
                                     [styles.active]: this.props.fileMenuOpen
@@ -479,6 +482,7 @@ MenuBar.propTypes = {
     onShare: PropTypes.func,
     onToggleLoginOpen: PropTypes.func,
     projectTitle: PropTypes.string,
+    readOnly: PropTypes.bool,
     renderLogin: PropTypes.func,
     sessionExists: PropTypes.bool,
     shouldSaveBeforeTransition: PropTypes.func,
@@ -507,6 +511,7 @@ const mapStateToProps = (state, ownProps) => {
         locale: state.locales.locale,
         loginMenuOpen: loginMenuOpen(state),
         projectTitle: state.scratchGui.projectTitle,
+        readOnly: state.scratchGui.readOnly,
         sessionExists: state.session && typeof state.session.session !== 'undefined',
         username: user ? user.username : null,
         userOwnsProject: ownProps.authorUsername && user &&
