@@ -200,7 +200,7 @@ const reducer = function (state, action) {
         }
         if (state.loadingState === LoadingState.LOADING_VM_CODIO) {
             return Object.assign({}, state, {
-                loadingState: LoadingState.AUTO_UPDATING_CODIO
+                loadingState: LoadingState.SHOWING_CODIO
             });
         }
         return state;

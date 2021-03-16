@@ -7,6 +7,7 @@ import VM from 'scratch-vm';
 import Base64Util from './util/base64-util';
 
 import {setProjectUnchanged} from '../reducers/project-changed';
+import {setProjectReadOnly} from '../reducers/read-only';
 import {
     defaultProjectId,
     LoadingStates,
@@ -54,6 +55,21 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                 this.props.setProjectId(props.projectId.toString());
             }
         }
+        componentWillMount () {
+            const {codio} = window
+            if (codio) {
+                codio.loaded()
+                    .then(() => {
+                        codio.subscribeProjectUpdate(options =>
+                            this.props.onProjectReadOnly(options.readOnly)
+                        );
+                    })
+                    .fail(msg => {
+                        /* eslint-disable-next-line no-console */
+                        console.log(`codio loaded - error: ${msg}`);
+                    });
+            }
+        }
         componentDidUpdate (prevProps) {
             if (prevProps.projectHost !== this.props.projectHost) {
                 storage.setProjectHost(this.props.projectHost);
@@ -90,6 +106,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                                 reject(new Error(err));
                                 return;
                             }
+                            const fileOptions = codio.getFileOptions();
                             window.codio.getBinaryFile(fileName)
                                 .then(res => {
                                     if (res && res.content.length === 0) {
@@ -97,7 +114,10 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                                     } else {
                                         const uint8array = Base64Util.base64ToUint8Array(res.content);
                                         const view = uint8array.buffer;
-                                        resolve(view);
+                                        resolve({
+                                            projectAsset: view,
+                                            options: fileOptions
+                                        });
                                     }
                                 })
                                 .fail(msg => {
@@ -123,8 +143,10 @@ const ProjectFetcherHOC = function (WrappedComponent) {
         }
         fetchCodioProject (projectId, loadingState) {
             return this.loadCodioProject(loadingState)
-                .then(projectAsset => {
+                .then(data => {
+                    const {projectAsset, options} = data
                     if (projectAsset) {
+                        this.props.onProjectReadOnly(options.readOnly);
                         this.props.onFetchedProjectData(projectAsset, loadingState);
                     } else {
                         // Treat failure to load as an error
@@ -163,6 +185,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                 onFetchedProjectData: onFetchedProjectDataProp,
                 onLoadingFinished: onLoadingFinishedProp,
                 onProjectUnchanged,
+                onProjectReadOnly,
                 projectHost,
                 projectId,
                 reduxProjectId,
@@ -193,6 +216,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
         onError: PropTypes.func,
         onFetchedProjectData: PropTypes.func,
         onProjectUnchanged: PropTypes.func,
+        onProjectReadOnly: PropTypes.func,
         projectHost: PropTypes.string,
         projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
         reduxProjectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
@@ -221,7 +245,8 @@ const ProjectFetcherHOC = function (WrappedComponent) {
         onLoadingFinished: (loadingState, success) =>
             dispatch(onLoadedProject(loadingState, ownProps.canSave, success)),
         setProjectId: projectId => dispatch(setProjectId(projectId)),
-        onProjectUnchanged: () => dispatch(setProjectUnchanged())
+        onProjectUnchanged: () => dispatch(setProjectUnchanged()),
+        onProjectReadOnly: readOnly => dispatch(setProjectReadOnly(readOnly))
     });
     // Allow incoming props to override redux-provided props. Used to mock in tests.
     const mergeProps = (stateProps, dispatchProps, ownProps) => Object.assign(

@@ -141,6 +141,22 @@ const alerts = [
         level: AlertLevels.WARN
     },
     {
+        alertId: 'savingCodioError',
+        clearList: ['createSuccess', 'creating', 'createCopySuccess', 'creatingCopy',
+            'createRemixSuccess', 'creatingRemix', 'saveSuccess', 'saving'],
+        showDownload: false,
+        showSaveNow: true,
+        closeButton: false,
+        content: (
+            <FormattedMessage
+                defaultMessage="Project could not save."
+                description="Message indicating that project could not be saved"
+                id="gui.alerts.savingError"
+            />
+        ),
+        level: AlertLevels.WARN
+    },
+    {
         alertId: 'saveSuccess',
         alertType: AlertTypes.INLINE,
         clearList: ['saveSuccess', 'saving', 'savingError'],
