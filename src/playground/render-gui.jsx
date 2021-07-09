@@ -80,7 +80,7 @@ export default appTarget => {
                 backpackHost={backpackHost}
                 canSave
                 onClickLogo={onClickLogo}
-                autoSaveIntervalSecs={60}
+                autoSaveIntervalSecs={10}
             />,
         appTarget);
 };
