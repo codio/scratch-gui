@@ -41,7 +41,7 @@ function getContentType (fileName) {
     switch (extn) {
     case 'html':
     case 'css':
-        contentType = 'text/' + extn
+        contentType = 'text/' + extn;
         break;
     case 'js':
         contentType = 'application/javascript';
@@ -119,4 +119,4 @@ async function upload (s3path, buildDir, files, key, secret) {
         err && console.log(err.message);
         process.exitCode = 1;
     }
-}())
+}());
