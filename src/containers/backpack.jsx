@@ -15,7 +15,7 @@ import DragConstants from '../lib/drag-constants';
 import DropAreaHOC from '../lib/drop-area-hoc.jsx';
 
 import {connect} from 'react-redux';
-import storage from '../lib/storage';
+import storage from '../lib/backpack-storage';
 import VM from 'scratch-vm';
 
 const dragTypes = [DragConstants.COSTUME, DragConstants.SOUND, DragConstants.SPRITE];
