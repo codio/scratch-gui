@@ -15,7 +15,7 @@ import DragConstants from '../lib/drag-constants';
 import DropAreaHOC from '../lib/drop-area-hoc.jsx';
 
 import {connect} from 'react-redux';
-import storage from '../lib/backpack-storage';
+import storage from '../lib/storage';
 import VM from 'scratch-vm';
 
 const dragTypes = [DragConstants.COSTUME, DragConstants.SOUND, DragConstants.SPRITE];
@@ -53,9 +53,11 @@ class Backpack extends React.Component {
         // If a host is given, add it as a web source to the storage module
         // TODO remove the hacky flag that prevents double adding
         if (props.host && !storage._hasAddedBackpackSource) {
-            storage.addWebSource(
+            storage.addWebStore(
                 [storage.AssetType.ImageVector, storage.AssetType.ImageBitmap, storage.AssetType.Sound],
-                this.getBackpackAssetURL
+                this.getBackpackAssetURL,
+                this.getBackpackAssetCreateConfig.bind(this),
+                this.getBackpackAssetCreateConfig.bind(this)
             );
             storage._hasAddedBackpackSource = true;
         }
@@ -70,6 +72,15 @@ class Backpack extends React.Component {
     }
     getBackpackAssetURL (asset) {
         return `${this.props.host}/${asset.assetId}.${asset.dataFormat}`;
+    }
+    getBackpackAssetCreateConfig (asset) {
+        // used in storage.store().
+        // not need here because store commented
+        return {
+            method: 'post',
+            url: `${this.props.host}/${asset.assetId}.${asset.dataFormat}`,
+            headers: {'x-token': this.props.token}
+        };
     }
     handleToggle () {
         const newState = !this.state.expanded;
@@ -109,12 +120,13 @@ class Backpack extends React.Component {
                     // Force the asset to save to the asset server before storing in backpack
                     // Ensures any asset present in the backpack is also on the asset server
                     if (presaveAsset && !presaveAsset.clean) {
-                        return storage.store(
+                        return Promise.resolve(payload);
+                        /* return storage.store(
                             presaveAsset.assetType,
                             presaveAsset.dataFormat,
                             presaveAsset.data,
                             presaveAsset.assetId
-                        ).then(() => payload);
+                        ).then(() => payload); */
                     }
                     return payload;
                 })
