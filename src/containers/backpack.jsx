@@ -71,7 +71,11 @@ class Backpack extends React.Component {
         this.props.vm.removeListener('BLOCK_DRAG_UPDATE', this.handleBlockDragUpdate);
     }
     getBackpackAssetURL (asset) {
-        return `${this.props.host}/${asset.assetId}.${asset.dataFormat}`;
+        let assetPath = asset.assetId;
+        if (!assetPath.includes('/')) {
+            assetPath = `${this.props.username}/${asset.assetId}`;
+        }
+        return `${this.props.host}/${assetPath}.${asset.dataFormat}`;
     }
     getBackpackAssetCreateConfig (asset) {
         // used in storage.store().
