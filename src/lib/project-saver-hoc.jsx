@@ -243,6 +243,7 @@ const ProjectSaverHOC = function (WrappedComponent) {
                 });
         }
         storeProjectToCodio () {
+            this.clearAutoSaveTimeout();
             return this.props.vm.saveProjectSb3ToCodio(this.props.vm)
                 .then(() => {
                     this.props.onSetProjectUnchanged();
