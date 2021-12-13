@@ -71,15 +71,6 @@ class Backpack extends React.Component {
     getBackpackAssetURL () {
         return false;
     }
-    getBackpackAssetCreateConfig (asset) {
-        // used in storage.store().
-        // not need here because store commented
-        return {
-            method: 'post',
-            url: `${this.props.host}/${asset.assetId}.${asset.dataFormat}`,
-            headers: {'x-token': this.props.token}
-        };
-    }
     handleToggle () {
         const newState = !this.state.expanded;
         this.setState({expanded: newState, contents: []}, () => {
