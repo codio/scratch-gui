@@ -55,9 +55,7 @@ class Backpack extends React.Component {
         if (props.host && !storage._hasAddedBackpackSource) {
             storage.addWebStore(
                 [storage.AssetType.ImageVector, storage.AssetType.ImageBitmap, storage.AssetType.Sound],
-                this.getBackpackAssetURL,
-                this.getBackpackAssetCreateConfig.bind(this),
-                this.getBackpackAssetCreateConfig.bind(this)
+                this.getBackpackAssetURL
             );
             storage._hasAddedBackpackSource = true;
         }
@@ -70,12 +68,8 @@ class Backpack extends React.Component {
         this.props.vm.removeListener('BLOCK_DRAG_END', this.handleBlockDragEnd);
         this.props.vm.removeListener('BLOCK_DRAG_UPDATE', this.handleBlockDragUpdate);
     }
-    getBackpackAssetURL (asset) {
-        let assetPath = asset.assetId;
-        if (!assetPath.includes('/')) {
-            assetPath = `${this.props.username}/${asset.assetId}`;
-        }
-        return `${this.props.host}/${assetPath}.${asset.dataFormat}`;
+    getBackpackAssetURL () {
+        return false;
     }
     getBackpackAssetCreateConfig (asset) {
         // used in storage.store().
