@@ -100,20 +100,19 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                         .then(() => {
                             const fileName = codio.getFileName();
                             if (typeof fileName !== 'string') {
-                                const err = `vm loadCodioFile - non string codio file name "${fileName}"`
+                                const err = `vm loadCodioFile - non string codio file name "${fileName}"`;
                                 /* eslint-disable-next-line no-console */
                                 console.log(err);
                                 reject(new Error(err));
                                 return;
                             }
                             const fileOptions = codio.getFileOptions();
-                            window.codio.getBinaryFile(fileName)
+                            window.codio.getBinaryFileContent(fileName)
                                 .then(res => {
                                     if (res && res.content.length === 0) {
                                         reject(new Error('empty file'));
                                     } else {
-                                        const uint8array = Base64Util.base64ToUint8Array(res.content);
-                                        const view = uint8array.buffer;
+                                        const view = res.content;
                                         resolve({
                                             projectAsset: view,
                                             options: fileOptions
@@ -144,7 +143,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
         fetchCodioProject (projectId, loadingState) {
             return this.loadCodioProject(loadingState)
                 .then(data => {
-                    const {projectAsset, options} = data
+                    const {projectAsset, options} = data;
                     if (projectAsset) {
                         this.props.onProjectReadOnly(options.readOnly);
                         this.props.onFetchedProjectData(projectAsset, loadingState);
