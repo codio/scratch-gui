@@ -56,7 +56,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
             }
         }
         componentWillMount () {
-            const {codio} = window
+            const {codio} = window;
             if (codio) {
                 codio.loaded()
                     .then(() => {
@@ -100,7 +100,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                         .then(() => {
                             const fileName = codio.getFileName();
                             if (typeof fileName !== 'string') {
-                                const err = `vm loadCodioFile - non string codio file name "${fileName}"`
+                                const err = `vm loadCodioFile - non string codio file name "${fileName}"`;
                                 /* eslint-disable-next-line no-console */
                                 console.log(err);
                                 reject(new Error(err));
@@ -144,7 +144,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
         fetchCodioProject (projectId, loadingState) {
             return this.loadCodioProject(loadingState)
                 .then(data => {
-                    const {projectAsset, options} = data
+                    const {projectAsset, options} = data;
                     if (projectAsset) {
                         this.props.onProjectReadOnly(options.readOnly);
                         this.props.onFetchedProjectData(projectAsset, loadingState);
