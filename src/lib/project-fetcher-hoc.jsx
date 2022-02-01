@@ -56,7 +56,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
             }
         }
         componentWillMount () {
-            const {codio} = window
+            const {codio} = window;
             if (codio) {
                 codio.loaded()
                     .then(() => {

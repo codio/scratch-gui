@@ -41,7 +41,7 @@ function getContentType (fileName) {
     switch (extn) {
     case 'html':
     case 'css':
-        contentType = 'text/' + extn
+        contentType = 'text/' + extn;
         break;
     case 'js':
         contentType = 'application/javascript';
@@ -76,6 +76,7 @@ function getContentType (fileName) {
 async function upload (s3path, buildDir, files, key, secret) {
     const s3Client = getClient(key, secret);
     if (files) {
+        let count = 0;
         const buildDirPattern = new RegExp(`^${buildDir}`);
         return Bluebird.map(files, fileName => {
             const fileContent = fs.readFileSync(fileName);
@@ -83,8 +84,15 @@ async function upload (s3path, buildDir, files, key, secret) {
                 Key: fileName.replace(buildDirPattern, s3path),
                 Body: fileContent,
                 ContentType: getContentType(fileName)}
-            ).promise();
-        }, {concurrency: 5});
+            )
+                .promise()
+                .then(() => {
+                    count++;
+                    console.log('uploaded', count, '/', files.length);
+                });
+        }, {concurrency: 5}).then(() => {
+            console.log('finished upload', count, '/', files.length);
+        });
     }
 }
 
@@ -119,4 +127,4 @@ async function upload (s3path, buildDir, files, key, secret) {
         err && console.log(err.message);
         process.exitCode = 1;
     }
-}())
+}());

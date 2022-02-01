@@ -53,7 +53,7 @@ class Backpack extends React.Component {
         // If a host is given, add it as a web source to the storage module
         // TODO remove the hacky flag that prevents double adding
         if (props.host && !storage._hasAddedBackpackSource) {
-            storage.addWebSource(
+            storage.addWebStore(
                 [storage.AssetType.ImageVector, storage.AssetType.ImageBitmap, storage.AssetType.Sound],
                 this.getBackpackAssetURL
             );
@@ -68,8 +68,8 @@ class Backpack extends React.Component {
         this.props.vm.removeListener('BLOCK_DRAG_END', this.handleBlockDragEnd);
         this.props.vm.removeListener('BLOCK_DRAG_UPDATE', this.handleBlockDragUpdate);
     }
-    getBackpackAssetURL (asset) {
-        return `${this.props.host}/${asset.assetId}.${asset.dataFormat}`;
+    getBackpackAssetURL () {
+        return false;
     }
     handleToggle () {
         const newState = !this.state.expanded;
@@ -109,12 +109,13 @@ class Backpack extends React.Component {
                     // Force the asset to save to the asset server before storing in backpack
                     // Ensures any asset present in the backpack is also on the asset server
                     if (presaveAsset && !presaveAsset.clean) {
-                        return storage.store(
+                        return Promise.resolve(payload);
+                        /* return storage.store(
                             presaveAsset.assetType,
                             presaveAsset.dataFormat,
                             presaveAsset.data,
                             presaveAsset.assetId
-                        ).then(() => payload);
+                        ).then(() => payload); */
                     }
                     return payload;
                 })

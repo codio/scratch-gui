@@ -7,9 +7,9 @@ import codePayload from './backpack/code-payload';
 // Add a new property for the full thumbnail url, which includes the host.
 // Also include a full body url for loading sprite zips
 // TODO retreiving the images through storage would allow us to remove this.
-const includeFullUrls = (item, host) => Object.assign({}, item, {
+const includeFullUrls = (item, host, username) => Object.assign({}, item, {
     thumbnailUrl: `${host}/${item.thumbnail}`,
-    bodyUrl: `${host}/${item.body}`
+    bodyUrl: `${host}/${username}/${item.body}`
 });
 
 const getBackpackContents = ({
@@ -28,7 +28,7 @@ const getBackpackContents = ({
         if (error || response.statusCode !== 200) {
             return reject(new Error(response.status));
         }
-        return resolve(response.body.map(item => includeFullUrls(item, host)));
+        return resolve(response.body.map(item => includeFullUrls(item, host, username)));
     });
 });
 
@@ -51,7 +51,7 @@ const saveBackpackObject = ({
         if (error || response.statusCode !== 200) {
             return reject(new Error(response.status));
         }
-        return resolve(includeFullUrls(response.body, host));
+        return resolve(includeFullUrls(response.body, host, username));
     });
 });
 
