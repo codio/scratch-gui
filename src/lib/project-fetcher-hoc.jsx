@@ -107,13 +107,12 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                                 return;
                             }
                             const fileOptions = codio.getFileOptions();
-                            window.codio.getBinaryFile(fileName)
+                            window.codio.getBinaryFileContent(fileName)
                                 .then(res => {
-                                    if (res && res.content.length === 0) {
+                                    if (res && res.content.byteLength === 0) {
                                         reject(new Error('empty file'));
                                     } else {
-                                        const uint8array = Base64Util.base64ToUint8Array(res.content);
-                                        const view = uint8array.buffer;
+                                        const view = res.content;
                                         resolve({
                                             projectAsset: view,
                                             options: fileOptions

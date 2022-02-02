@@ -23,8 +23,8 @@ const base = {
         host: 'scratch.codio.test',
         port: process.env.PORT || 8601,
         https: {
-            key: fs.readFileSync('../new-generation/certs/codio.test.key'),
-            cert: fs.readFileSync('../new-generation/certs/codio.test.crt')
+            key: fs.readFileSync('../../codio/new-generation/certs/codio.test.key'),
+            cert: fs.readFileSync('../../codio/new-generation/certs/codio.test.crt')
         }
     },
     output: {
