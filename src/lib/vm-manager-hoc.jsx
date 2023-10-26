@@ -57,7 +57,8 @@ const vmManagerHOC = function (WrappedComponent) {
                     this.props.onLoadedProject(this.props.loadingState, this.props.canSave);
                     // Wrap in a setTimeout because skin loading in
                     // the renderer can be async.
-                    setTimeout(() => this.props.onSetProjectUnchanged());
+                    // Wait 500 ms because events from scratch-blocks takes time. ie comments load.
+                    setTimeout(() => this.props.onSetProjectUnchanged(), 500);
 
                     // If the vm is not running, call draw on the renderer manually
                     // This draws the state of the loaded project with no blocks running
