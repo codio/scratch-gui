@@ -4,7 +4,6 @@ import {intlShape, injectIntl} from 'react-intl';
 import bindAll from 'lodash.bindall';
 import {connect} from 'react-redux';
 import VM from 'scratch-vm';
-import Base64Util from './util/base64-util';
 
 import {setProjectUnchanged} from '../reducers/project-changed';
 import {setProjectReadOnly} from '../reducers/read-only';
@@ -41,6 +40,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
                 'fetchProject'
             ]);
             storage.setProjectHost(props.projectHost);
+            storage.setProjectToken(props.projectToken);
             storage.setAssetHost(props.assetHost);
             storage.setTranslatorFunction(props.intl.formatMessage);
             // props.projectId might be unset, in which case we use our default;
@@ -73,6 +73,9 @@ const ProjectFetcherHOC = function (WrappedComponent) {
         componentDidUpdate (prevProps) {
             if (prevProps.projectHost !== this.props.projectHost) {
                 storage.setProjectHost(this.props.projectHost);
+            }
+            if (prevProps.projectToken !== this.props.projectToken) {
+                storage.setProjectToken(this.props.projectToken);
             }
             if (prevProps.assetHost !== this.props.assetHost) {
                 storage.setAssetHost(this.props.assetHost);
@@ -217,6 +220,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
         onProjectUnchanged: PropTypes.func,
         onProjectReadOnly: PropTypes.func,
         projectHost: PropTypes.string,
+        projectToken: PropTypes.string,
         projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
         reduxProjectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
         setProjectId: PropTypes.func,
