@@ -66,7 +66,7 @@ const ProjectSaverHOC = function (WrappedComponent) {
             // These functions are called with null on unmount to prevent stale references.
             this.props.onSetProjectThumbnailer(this.getProjectThumbnail);
             this.props.onSetProjectSaver(this.tryToAutoSave);
-            const {codio} = window
+            const {codio} = window;
             if (codio) {
                 codio.loaded()
                     .then(() => {
