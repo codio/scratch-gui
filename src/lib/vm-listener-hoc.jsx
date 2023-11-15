@@ -75,17 +75,20 @@ const vmListenerHOC = function (WrappedComponent) {
             }
         }
         subscribeCodioChanges () {
-            window.codio.loaded()
-                .then(() => {
-                    const fileName = window.codio.getFileName();
-                    if (typeof fileName !== 'string') {
-                        const err = `vm loadCodioFile - non string codio file name "${fileName}"`;
-                        /* eslint-disable-next-line no-console */
-                        console.log(err);
-                        return;
-                    }
-                    window.codio.subscribe('hasChanges', () => this.props.projectChanged);
-                });
+            const {codio} = window;
+            if (codio) {
+                codio.loaded()
+                    .then(() => {
+                        const fileName = codio.getFileName();
+                        if (typeof fileName !== 'string') {
+                            const err = `vm loadCodioFile - non string codio file name "${fileName}"`;
+                            /* eslint-disable-next-line no-console */
+                            console.log(err);
+                            return;
+                        }
+                        codio.subscribe('hasChanges', () => this.props.projectChanged);
+                    });
+            }
         }
         handleProjectChanged () {
             if (this.props.shouldUpdateProjectChanged && !this.props.projectChanged) {

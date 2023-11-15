@@ -1,4 +1,8 @@
 version: 2.1
+orbs:
+  browser-tools: circleci/browser-tools@1.2.4
+  commitlint: conventional-changelog/commitlint@1.0.0
+  node: circleci/node@5.1.0
 aliases:
   - &save_git_cache
     save_cache:
@@ -32,25 +36,71 @@ aliases:
     save_cache:
       paths:
         - node_modules
-      key: v3-npm-{{ checksum "package-lock.json" }}
+        - src/generated
+        - static/microbit
+      key: v4-npm-{{ checksum "package-lock.json" }}
   - &restore_npm_cache
     restore_cache:
       keys:
-        - v3-npm-{{ checksum "package-lock.json" }}
-        - v3-npm-
+        - v4-npm-{{ checksum "package-lock.json" }}
+        - v4-npm-
   - &defaults
     docker:
-      - image: circleci/node:10-browsers
+      # TODO: fix scratch-audio and change this to `cimg/node:lts-browsers`
+      - image: cimg/node:14.21-browsers
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
+    executor: node/default
     working_directory: ~/repo
 
 jobs:
-  setup:
+  build-test-no-cache:
     <<: *defaults
+    environment:
+      DETECT_CHROMEDRIVER_VERSION: "true"
+      JEST_JUNIT_OUTPUT_DIR: test-results
+      NODE_OPTIONS: --max-old-space-size=4000
     steps:
       - *restore_git_cache
       - checkout
-      - *restore_npm_cache
-      - run: npm ci
+      - browser-tools/install-chrome # must be before node/install-packages
+      - node/install-packages
+      - run:
+          name: Lint
+          command: npm run test:lint -- --quiet --output-file test-results/eslint-results.xml --format junit
+      - run:
+          name: Unit
+          environment:
+            JEST_JUNIT_OUTPUT_NAME: unit-results.xml
+          command: npm run test:unit -- --reporters="default" --reporters="jest-junit" --coverage --coverageReporters=text --coverageReporters=lcov --maxWorkers="2"
+      - run:
+          name: Build
+          environment:
+            NODE_ENV: production
+          command: npm run build
+      - run:
+          name: Integration
+          environment:
+              JEST_JUNIT_OUTPUT_NAME: integration-results.xml
+          command: |
+              google-chrome --version
+              npx --no -- chromedriver --version
+              npm run test:integration -- --reporters="default" --reporters="jest-junit"
+      - store_artifacts:
+          path: coverage
+      - store_test_results:
+          path: test-results
+      - run: npx --no -- semantic-release --dry-run
+  setup:
+    <<: *defaults
+    environment:
+      DETECT_CHROMEDRIVER_VERSION: "true"
+    steps:
+      - *restore_git_cache
+      - checkout
+      - browser-tools/install-chrome # must be before node/install-packages
+      - node/install-packages
       - *save_git_cache
       - *save_npm_cache
   lint:
@@ -117,11 +167,14 @@ jobs:
       - checkout
       - *restore_npm_cache
       - *restore_build_cache
+      - browser-tools/install-chrome
       - run:
           name: Integration
           environment:
               JEST_JUNIT_OUTPUT_DIR: test-results/integration
           command: |
+            google-chrome --version
+            npx --no -- chromedriver --version
             export TESTFILES=$(circleci tests glob "test/integration/*.test.js" | circleci tests split --split-by=timings)
             $(npm bin)/jest ${TESTFILES} --reporters="default" --reporters="jest-junit" --runInBand
       - store_test_results:
@@ -129,27 +182,19 @@ jobs:
 
   deploy-npm:
     <<: *defaults
-    environment:
-      NODE_OPTIONS: --max-old-space-size=4000
     steps:
       - *restore_git_cache
-      - *restore_dist_cache
       - checkout
-      - run: |
-          echo export RELEASE_VERSION="0.1.0-prerelease.$(date +'%Y%m%d%H%M%S')" >> $BASH_ENV
-          echo export NPM_TAG=latest >> $BASH_ENV
-          if [ "$CIRCLE_BRANCH" == "master" ]
-            then echo export NPM_TAG=stable >> $BASH_ENV
-          fi
-          if [[ "$CIRCLE_BRANCH" == hotfix/* ]] # double brackets are important for matching the wildcard
-            then echo export NPM_TAG=hotfix >> $BASH_ENV
-          fi
-      - run: npm version --no-git-tag-version $RELEASE_VERSION
-      - run: |
-          npm set //registry.npmjs.org/:_authToken=$NPM_TOKEN
-          npm publish --tag $NPM_TAG
-      - run: git tag $RELEASE_VERSION
-      - run: git push $CIRCLE_REPOSITORY_URL $RELEASE_VERSION
+      - *restore_npm_cache
+      - *restore_dist_cache
+      - run:
+          name: adjust config for hotfix if necessary
+          command: |
+            # double brackets are important for matching the wildcard
+            if [[ "$CIRCLE_BRANCH" == hotfix/* ]]; then
+              sed -e "s|hotfix/REPLACE|${CIRCLE_BRANCH}|" --in-place release.config.js
+            fi
+      - run: npx --no -- semantic-release
 
   deploy-gh-pages:
     <<: *defaults
@@ -173,6 +218,17 @@ jobs:
 
 workflows:
   version: 2
+  commitlint:
+    jobs:
+      - commitlint/lint:
+          target-branch: develop
+          filters:
+            branches:
+              ignore:
+                - master
+                - develop
+                - beta
+                - /^hotfix\/.*/
   push-translations:
     triggers:
       - schedule:
@@ -182,33 +238,87 @@ workflows:
               only:
                 - develop
     jobs:
-      - setup
+      - setup:
+          context:
+            - dockerhub-credentials
       - push-translations:
+          context:
+            - dockerhub-credentials
           requires:
               - setup
 
+  build-test-no-deploy:
+    jobs:
+      - build-test-no-cache:
+          context:
+            - dockerhub-credentials
+          filters:
+            branches:
+              ignore:
+                - master
+                - develop
+                - beta
+                - /^hotfix\/.*/
   build-test-deploy:
     jobs:
-      - setup
+      - setup:
+          context:
+            - dockerhub-credentials
+          filters:
+            branches:
+              only:
+                - master
+                - develop
+                - beta
+                - /^hotfix\/.*/
       - lint:
+          context:
+            - dockerhub-credentials
           requires:
             - setup
       - unit:
+          context:
+            - dockerhub-credentials
           requires:
             - setup
       - build:
+          context:
+            - dockerhub-credentials
           requires:
             - setup
       - integration:
+          context:
+            - dockerhub-credentials
           requires:
             - build
       - store_build:
+          context:
+            - dockerhub-credentials
           requires:
             - build
+          filters:
+            branches:
+              only:
+                - master
+                - develop
+                - beta
+                - /^hotfix\/.*/
       - store_dist:
+          context:
+            - dockerhub-credentials
           requires:
             - build
+          filters:
+            branches:
+              only:
+                - master
+                - develop
+                - beta
+                - /^hotfix\/.*/
       - deploy-npm:
+          context:
+            - dockerhub-credentials
+            - scratch-npm-creds
           requires:
             - lint
             - unit
@@ -219,8 +329,11 @@ workflows:
               only:
                 - master
                 - develop
+                - beta
                 - /^hotfix\/.*/
       - deploy-gh-pages:
+          context:
+            - dockerhub-credentials
           requires:
             - lint
             - unit

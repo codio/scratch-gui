@@ -1,4 +1,4 @@
-# scratch-gui
+# codio fork of scratch-gui
 #### Scratch GUI is a set of React components that comprise the interface for creating and running Scratch 3.0 projects
 
 ## Installation
@@ -6,11 +6,11 @@ This requires you to have Git and Node.js installed.
 
 In your own node environment/application:
 ```bash
-npm install https://github.com/LLK/scratch-gui.git
+npm install https://github.com/codio/scratch-gui.git
 ```
 If you want to edit/play yourself:
 ```bash
-git clone https://github.com/LLK/scratch-gui.git
+git clone https://github.com/codio/scratch-gui.git
 cd scratch-gui
 npm install
 ```
@@ -127,6 +127,12 @@ If you want to watch the browser as it runs the test, rather than running headle
 
 ```bash
 USE_HEADLESS=no $(npm bin)/jest --runInBand test/integration/backpack.test.js
+```
+
+_Note: If you are seeing failed tests related to `chromedriver` being incompatible with your version of Chrome, you may need to update `chromedriver` with:_
+
+```bash
+npm install chromedriver@{version}
 ```
 
 ## Troubleshooting
@@ -256,7 +262,7 @@ Here's what will happen in the project state machine:
 7. The `SHOWING_WITH_ID` state. Now the project appears normally and is playable and editable.
 
 ## Donate
-We provide [Scratch](https://scratch.mit.edu) free of charge, and want to keep it that way! Please consider making a [donation](https://secure.donationpay.org/scratchfoundation/) to support our continued engineering, design, community, and resource development efforts. Donations of any size are appreciated. Thank you!
+We provide [Scratch](https://scratch.mit.edu) free of charge, and want to keep it that way! Please consider making a [donation](https://www.scratchfoundation.org/donate) to support our continued engineering, design, community, and resource development efforts. Donations of any size are appreciated. Thank you!
 
 ## Codio
 Added `codio-client.js` link to `index.ejs`
