@@ -21,10 +21,10 @@ const base = {
     devServer: {
         contentBase: path.resolve(__dirname, 'build'),
         host: 'scratch.codio.test',
-        port: process.env.PORT || 8611,
+        port: process.env.PORT || 8601,
         https: {
-            key: fs.readFileSync('/Users/dsuchkov/Projects/codionfs/new-generation/certs/codio.test.key'),
-            cert: fs.readFileSync('/Users/dsuchkov/Projects/codionfs/new-generation/certs/codio.test.crt')
+            key: fs.readFileSync('/home/user/codio/new-generation/certs/codio.test.key'),
+            cert: fs.readFileSync('/home/user/codio/new-generation/certs/codio.test.crt')
         }
     },
     output: {
