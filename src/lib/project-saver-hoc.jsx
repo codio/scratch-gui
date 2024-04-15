@@ -174,7 +174,6 @@ const ProjectSaverHOC = function (WrappedComponent) {
             this.props.onShowSavingAlert();
             return this.storeProjectToCodio()
                 .then(() => {
-                    this.props.onUpdatedProject(this.props.loadingState);
                     this.props.onShowSaveSuccessAlert();
                 })
                 .catch(err => {
@@ -182,7 +181,8 @@ const ProjectSaverHOC = function (WrappedComponent) {
                     // user the chance to download or retry the save manually.
                     this.props.onShowAlert('savingCodioError');
                     this.props.onProjectError(err);
-                });
+                })
+                .finally(() => this.props.onUpdatedProject(this.props.loadingState));
         }
         updateProjectToStorage () {
             this.props.onShowSavingAlert();
