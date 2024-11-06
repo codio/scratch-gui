@@ -105,9 +105,12 @@ const buildConfig = baseConfig.clone()
             },
             host: 'scratch.codio.test',
             port: process.env.PORT || 8601,
-            https: {
-                key: fs.readFileSync('/home/user/codio/new-generation/certs/codio.test.key'),
-                cert: fs.readFileSync('/home/user/codio/new-generation/certs/codio.test.crt')
+            server: {
+                type: 'https',
+                options: {
+                    key: fs.readFileSync('/home/user/codio/new-generation/certs/codio.test.key'),
+                    cert: fs.readFileSync('/home/user/codio/new-generation/certs/codio.test.crt')
+                }
             }
         }
     })
