@@ -1,7 +1,8 @@
-jest.setTimeout(30000); // eslint-disable-line no-undef
+// some server-side things don't fully fail until a 90-second timeout
+// allow time for that so we get a more specific error message
+jest.setTimeout(95000); // eslint-disable-line no-undef
 
 import bindAll from 'lodash.bindall';
-import 'chromedriver'; // register path
 import webdriver from 'selenium-webdriver';
 
 const {Button, By, until} = webdriver;
@@ -235,8 +236,13 @@ class SeleniumHelper {
         const outerError = new Error(`loadUri failed with arguments:\n\turi: ${uri}`);
         try {
             await this.setTitle(`loadUri ${uri}`);
+            // TODO: The height is set artificially high to fix this test:
+            // 'Loading with locale shows correct translation for string length block parameter'
+            // which fails because the block is offscreen.
+            // We should set this back to 1024x768 once we find a good way to fix that test.
+            // Using `scrollIntoView` didn't seem to do the trick.
             const WINDOW_WIDTH = 1024;
-            const WINDOW_HEIGHT = 768;
+            const WINDOW_HEIGHT = 960;
             await this.driver
                 .get(`file://${uri}`);
             await this.driver
