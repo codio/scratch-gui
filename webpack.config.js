@@ -70,6 +70,23 @@ const baseConfig = new ScratchWebpackConfigBuilder(
 
 if (!process.env.CI) {
     baseConfig.addPlugin(new webpack.ProgressPlugin());
+    baseConfig.merge({
+        devServer: {
+            client: {
+                overlay: true,
+                progress: true
+            },
+            host: 'scratch.codio.test',
+            port: process.env.PORT || 8601,
+            server: {
+                type: 'https',
+                options: {
+                    key: fs.readFileSync('/home/user/codio/new-generation/certs/codio.test.key'),
+                    cert: fs.readFileSync('/home/user/codio/new-generation/certs/codio.test.crt')
+                }
+            }
+        }
+    });
 }
 
 // build the shipping library in `dist/`
@@ -97,23 +114,6 @@ const distConfig = baseConfig.clone()
 // build the examples and debugging tools in `build/`
 const buildConfig = baseConfig.clone()
     .enableDevServer(process.env.PORT || 8601)
-    .merge({
-        devServer: {
-            client: {
-                overlay: true,
-                progress: true
-            },
-            host: 'scratch.codio.test',
-            port: process.env.PORT || 8601,
-            server: {
-                type: 'https',
-                options: {
-                    key: fs.readFileSync('/home/user/codio/new-generation/certs/codio.test.key'),
-                    cert: fs.readFileSync('/home/user/codio/new-generation/certs/codio.test.crt')
-                }
-            }
-        }
-    })
     .merge({
         entry: {
             gui: './src/playground/index.jsx',
