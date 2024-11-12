@@ -26,3 +26,5 @@ npm-*
 
 scratch-gui.iml
 .idea/*
+# for act
+.secrets

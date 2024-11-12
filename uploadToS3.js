@@ -125,6 +125,7 @@ async function upload (s3path, buildDir, files, key, secret) {
         /* eslint-disable no-unused-expressions */
         /* eslint-disable no-console */
         err && console.log(err.message);
+        /* eslint-disable require-atomic-updates */
         process.exitCode = 1;
     }
 }());
