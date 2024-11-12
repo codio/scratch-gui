@@ -308,5 +308,5 @@ resource development efforts. Donations of any size are appreciated. Thank you!
 ## Codio
 Added `codio-client.js` link to `index.ejs`
 WARNING: The build takes too much resources!!!
-Build minified client with `export NODE_OPTIONS=--max-old-space-size=4000 export NODE_ENV=production npm run build`
+Build minified client with `NODE_OPTIONS=--max-old-space-size=4000 NODE_ENV=production npm run build`
 Upload to S3 `./s3-upload.sh "s3_assets_access_key" "s3_assets_access_secret"` 
