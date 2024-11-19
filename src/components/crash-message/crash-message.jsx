@@ -41,23 +41,25 @@ const CrashMessage = props => (
                     />
                 </p>
             )}
-            <button
-                className={styles.reloadButton}
-                onClick={props.onReload}
-            >
-                <FormattedMessage
-                    defaultMessage="Reload"
-                    description="Button to reload the page when page crashes"
-                    id="gui.crashMessage.reload"
-                />
-            </button>
+            {props.onReload && (
+                <button
+                    className={styles.reloadButton}
+                    onClick={props.onReload}
+                >
+                    <FormattedMessage
+                        defaultMessage="Reload"
+                        description="Button to reload the page when page crashes"
+                        id="gui.crashMessage.reload"
+                    />
+                </button>
+            )}
         </Box>
     </div>
 );
 
 CrashMessage.propTypes = {
     eventId: PropTypes.string,
-    onReload: PropTypes.func.isRequired
+    onReload: PropTypes.func
 };
 
 export default CrashMessage;
