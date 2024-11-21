@@ -60,13 +60,13 @@ const baseConfig = new ScratchWebpackConfigBuilder(
                 force: true
             },
             {
-                context: 'node_modules/scratch-vm/dist/web',
-                from: 'extension-worker.{js,js.map}',
-                noErrorOnMissing: true
+                context: 'node_modules/scratch-storage/dist/web/chunks',
+                from: '*.{js,js.map}',
+                to: 'chunks',
             },
             {
-                context: 'node_modules/scratch-storage/dist/web/',
-                from: '**/*',
+                context: 'node_modules/scratch-vm/dist/web',
+                from: 'extension-worker.{js,js.map}',
                 noErrorOnMissing: true
             }
         ]
