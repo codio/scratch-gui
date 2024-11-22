@@ -310,9 +310,3 @@ Added `codio-client.js` link to `index.ejs`
 WARNING: The build takes too much resources!!!
 Build minified client with `NODE_ENV=production npm run build`
 Upload to S3 `./s3-upload.sh "s3_assets_access_key" "s3_assets_access_secret"` 
-
-"scratch-storage": "file:/media/user/BigL/codio/scratch-storage",
-
-"scratch-storage": "^3.0.0",
-
-"scratch-vm": "codio/scratch-vm#16210_fixes",
