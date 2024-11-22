@@ -90,14 +90,7 @@ if (!process.env.CI) {
                     key: fs.readFileSync('/home/user/codio/new-generation/certs/codio.test.key'),
                     cert: fs.readFileSync('/home/user/codio/new-generation/certs/codio.test.crt')
                 }
-            },
-            devMiddleware: {
-                // index: true,
-                // mimeTypes: { phtml: 'text/html' },
-                // publicPath: '/app',
-                // serverSideRender: true,
-                // writeToDisk: true,
-            },
+            }
         }
     });
 }
