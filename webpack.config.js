@@ -14,7 +14,8 @@ const baseConfig = new ScratchWebpackConfigBuilder(
     {
         rootPath: path.resolve(__dirname),
         enableReact: true,
-        shouldSplitChunks: false
+        shouldSplitChunks: false,
+        publicPath: ''
     })
     .setTarget('browserslist')
     .merge({
@@ -59,6 +60,11 @@ const baseConfig = new ScratchWebpackConfigBuilder(
                 from: 'src/lib/themes/high-contrast/blocks-media',
                 to: 'static/blocks-media/high-contrast',
                 force: true
+            },
+            {
+                context: 'node_modules/scratch-storage/dist/web/chunks',
+                from: '*.{js,js.map}',
+                to: 'chunks'
             },
             {
                 context: 'node_modules/scratch-vm/dist/web',

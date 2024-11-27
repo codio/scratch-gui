@@ -50,16 +50,16 @@ class ErrorBoundary extends React.Component {
     }
 
     handleReload () {
-        window.location.replace(window.location.origin + window.location.pathname);
+        // do nothing. maybe in the future create new default project.
+        // window.location.replace(window.location.origin + window.location.pathname);
+        return;
     }
 
     render () {
         if (this.state.error) {
             if (recommendedBrowser()) {
                 return (
-                    <CrashMessageComponent
-                        onReload={this.handleReload}
-                    />
+                    <CrashMessageComponent />
                 );
             }
             return (<BrowserModalComponent
